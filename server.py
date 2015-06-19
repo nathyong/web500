@@ -15,7 +15,7 @@ from tornado.options import define, options, parse_command_line
 import lib500
 
 define("port", default=8888, help="run on the given port", type=int)
-reserved_usernames = ["anonymous"]
+reserved_usernames = ["anonymous", "", "debug"]
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
@@ -51,12 +51,38 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                     print("response: " + str(response))
                     self.write_message(response)
 
-                if "username" in data and not data["secretkey"]:
-                    response = {"act": "auth",
-                                "username": data["username"],
-                                "secretkey": client_id,
-                                "response": "success"}
-                    user_db[client_id] = data["username"]
+                elif "username" in data:
+                    if data["username"] in reserved_usernames:
+                        response = {"act": "auth",
+                                    "username": user_db[client_id],
+                                    "secretkey": client_id,
+                                    "response": "fail"}
+                    elif data["username"] in user_db.values():
+                        if user_db[client_id] == data["username"]:
+                            return
+                        elif data["secretkey"]:
+                            if data["secretkey"] not in user_db:
+                                print("secret key not existent")
+                                return
+                            elif user_db[data["secretkey"]] != data["username"]:
+                                print("secret key wrong")
+                                return
+                            del user_db[client_id]
+                            response = {"act": "auth",
+                                        "username": user_db[data["secretkey"]],
+                                        "secretkey": data["secretkey"],
+                                        "response": "success"}
+                        else:
+                            response = {"act": "auth",
+                                        "username": user_db[client_id],
+                                        "secretkey": client_id,
+                                        "response": "taken"}
+                    else:
+                        user_db[client_id] = data["username"]
+                        response = {"act": "auth",
+                                    "username": user_db[client_id],
+                                    "secretkey": client_id,
+                                    "response": "success"}
                     print("response: " + str(response))
                     self.write_message(response)
 
