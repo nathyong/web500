@@ -16,16 +16,16 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        number = randint(0, 2^64 - 1)
-        self.render("index.html", number=number)
+        self.render("index.html")
 
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         print("WebSocket opened")
 
-    def on_message(self, message):
-        self.write_message(u"You said: " + message)
+    def on_message(self, data):
+        msg = json.loads(data)
+        self.write_message(data)
 
     def on_close(self):
         print("WebSocket closed")

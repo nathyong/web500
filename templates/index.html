@@ -2,9 +2,19 @@
 <html>
 <head>
   <meta charset="UTF-8" /><title>Hello World</title>
-  <script type="text/javascript" src="static/client.js"></script>
+  <script type="text/javascript" src="static/jquery-1.10.2.min.js"></script>
 </head>
 <body>
-  <h1>{{ number }}</h1>
+    <h1>Your client id is: <span id="uid">undefined</span></h1>
+  <table id="msglist">
+      <tbody>
+          <tr><th>user</th><th>messages</th></tr>
+      </tbody>
+  </table>
+  <form id="chatter">
+      <label for="msgbox">Message:</label><input type="textarea" name="msgbox" id="msgbox"></input>
+      <input type="submit" onclick="sendmsg(); return false;" value="Send"></input>
+  </form>
+  <script type="text/javascript" src="static/client.js"></script>
 </body>
 </html>
