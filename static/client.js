@@ -14,8 +14,13 @@ ws.onmessage = function(evt) {
             $('#error').hide();
         } else if (data.response === 'taken') {
             //prompt for login or new username
-            $('#username').val(data.username);
             $('#error, #login').show();
+        } else if (data.response === 'changed') {
+            $.ajax({
+                type: "POST",
+                url: "/cookie",
+                data: "username=" + data.username + "&secretkey=" + data.secretkey,
+            });
         } else {
             //unsuitable user name (anonymous)
             $('#username').val(data.username);
