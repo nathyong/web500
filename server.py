@@ -30,23 +30,36 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         self.sockets_list.append(self)
 
     def on_message(self, msg):
+        print(msg)
         try:
+            client_id = self.get_secure_cookie("uniqueid")
+            assert(client_id)
             data = json.loads(msg)
             action = data["act"]
 
             if action == "auth":
                 if "secretkey" not in data and "username" not in data:
-                    client_id = self.get_secure_cookie("uniqueid")
-                    assert(client_id)
-                    user_db[client_id] = "anonymous"
+                    if client_id not in user_db:
+                        user_db[client_id] = "anonymous"
                     response = {"act": "auth",
-                                "username": "anonymous",
-                                "secretkey": client_id}
+                                "username": user_db[client_id],
+                                "secretkey": client_id,
+                                "response": "success"}
+                    print("response: " + str(response))
+                    self.write_message(response)
+
+                if "username" in data and not data["secretkey"]:
+                    response = {"act": "auth",
+                                "username": data["username"],
+                                "secretkey": client_id,
+                                "response": "success"}
+                    user_db[client_id] = data["username"]
+                    print("response: " + str(response))
                     self.write_message(response)
 
             elif action == "chat":
                 response = {"act": "chat",
-                            "from": "anonymous",
+                            "from": user_db[client_id],
                             "message": data["message"]}
                 for s in self.sockets_list:
                     s.write_message(json.dumps(response))
