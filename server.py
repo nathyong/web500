@@ -1,7 +1,10 @@
 #!/usr/bin/python
+"""The main entry point for the Web500 program.
+"""
 
 import json
 import os.path
+import sqlite3
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
@@ -98,6 +101,17 @@ def main():
     tornado.ioloop.IOLoop.instance().start()
 
 
+def get_db_connection(db_path):
+    """Acquire a connection to a populated user database, performing
+    initialisation if necessary."""
+    db = sqlite3.connect(db_path)
+    try:
+        db.execute("SELECT * FROM Users")
+    except sqlite3.OperationalError:
+        db.execute("CREATE TABLE Users (ID int, Name varchar(128))")
+    return db
+
 if __name__ == "__main__":
+    users_db = sqlite3.connect("users.db")
     user_db = {}
     main()
