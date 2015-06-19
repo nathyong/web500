@@ -26,6 +26,14 @@ class MainHandler(tornado.web.RequestHandler):
         self.render("index.html")
 
 
+class CookieHandler(tornado.web.RequestHandler):
+    def post(self):
+        username = self.get_argument("username")
+        secretkey = self.get_argument("secretkey")
+        if user_db[secretkey] == username:
+            self.set_secure_cookie("uniqueid", secretkey)
+
+
 class SocketHandler(tornado.websocket.WebSocketHandler):
     sockets_list = []
 
@@ -71,7 +79,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                             response = {"act": "auth",
                                         "username": user_db[data["secretkey"]],
                                         "secretkey": data["secretkey"],
-                                        "response": "success"}
+                                        "response": "changed"}
                         else:
                             response = {"act": "auth",
                                         "username": user_db[client_id],
@@ -119,6 +127,7 @@ def main():
     parse_command_line()
     application = tornado.web.Application(
         [(r"/", MainHandler),
+         (r"/cookie", CookieHandler),
          (r"/socket", SocketHandler)],
         static_path=os.path.join(os.path.dirname(__file__), "static"),
         template_path=os.path.join(os.path.dirname(__file__), "templates"),
