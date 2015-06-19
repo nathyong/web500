@@ -12,23 +12,49 @@ from tornado.options import define, options, parse_command_line
 import lib500
 
 define("port", default=8888, help="run on the given port", type=int)
+reserved_usernames = ["anonymous"]
 
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
+        if not self.get_secure_cookie("uniqueid"):
+            self.set_secure_cookie("uniqueid", hex(randint(0, 1048575))[2:])
+        else:
+            self.set_secure_cookie("uniqueid", self.get_secure_cookie("uniqueid"))
         self.render("index.html")
 
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
+    sockets_list = []
+
     def open(self):
-        print("WebSocket opened")
+        self.sockets_list.append(self)
 
-    def on_message(self, data):
-        msg = json.loads(data)
-        self.write_message(data)
+    def on_message(self, msg):
+        try:
+            data = json.loads(msg)
+            action = data["act"]
 
-    def on_close(self):
-        print("WebSocket closed")
+            if action == "auth":
+                pass
+            elif action == "chat":
+                response = {"message": data["message"]}
+            else:
+                self.log_exception(KeyError, "Unknown message action: " + msg, "")
+                return
+
+            for s in self.sockets_list:
+                s.write_message(json.dumps(response))
+
+        except ValueError:
+            self.log_exception(ValueError, "Badly formatted message: " + msg, "")
+            return
+        except KeyError:
+            self.log_exception(KeyError, "Message received without action: " + msg, "")
+            return
+
+    def on_connection_close(self):
+        self.sockets_list.remove(self)
 
 
 class GameInstance(object):
