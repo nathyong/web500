@@ -43,7 +43,7 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             if action == "auth":
                 if "secretkey" not in data and "username" not in data:
                     if client_id not in user_db:
-                        user_db[client_id] = "anonymous"
+                        user_db[client_id] = ""
                     response = {"act": "auth",
                                 "username": user_db[client_id],
                                 "secretkey": client_id,
