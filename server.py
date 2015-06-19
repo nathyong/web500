@@ -14,7 +14,6 @@ import lib500
 define("port", default=8888, help="run on the given port", type=int)
 reserved_usernames = ["anonymous"]
 
-
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         if not self.get_secure_cookie("uniqueid"):
@@ -36,15 +35,25 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
             action = data["act"]
 
             if action == "auth":
-                pass
-            elif action == "chat":
-                response = {"message": data["message"]}
-            else:
-                self.log_exception(KeyError, "Unknown message action: " + msg, "")
-                return
+                if "secretkey" not in data and "username" not in data:
+                    client_id = self.get_secure_cookie("uniqueid")
+                    assert(client_id)
+                    user_db[client_id] = "anonymous"
+                    response = {"act": "auth",
+                                "username": "anonymous",
+                                "secretkey": client_id}
+                    self.write_message(response)
 
-            for s in self.sockets_list:
-                s.write_message(json.dumps(response))
+            elif action == "chat":
+                response = {"act": "chat",
+                            "from": "anonymous",
+                            "message": data["message"]}
+                for s in self.sockets_list:
+                    s.write_message(json.dumps(response))
+
+            else:
+                self.log_exception(ValueError, "Unknown message action: " + msg, "")
+                return
 
         except ValueError:
             self.log_exception(ValueError, "Badly formatted message: " + msg, "")
@@ -70,10 +79,12 @@ def main():
         [(r"/", MainHandler),
          (r"/socket", SocketHandler)],
         static_path=os.path.join(os.path.dirname(__file__), "static"),
-        template_path=os.path.join(os.path.dirname(__file__), "templates"))
+        template_path=os.path.join(os.path.dirname(__file__), "templates"),
+        cookie_secret="Cookiezi")
     application.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
 
 
 if __name__ == "__main__":
+    user_db = {}
     main()
