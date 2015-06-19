@@ -17,7 +17,11 @@ import lib500
 define("port", default=8888, help="run on the given port", type=int)
 reserved_usernames = ["anonymous", "", "debug"]
 
+
 class MainHandler(tornado.web.RequestHandler):
+    """Default handler for HTTP GET requests at the root level.  Will set
+    a unique ID cookie on the client side if it doesn't exist already.
+    """
     def get(self):
         if not self.get_secure_cookie("uniqueid"):
             self.set_secure_cookie("uniqueid", hex(randint(0, 1048575))[2:])
@@ -27,6 +31,9 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 class CookieHandler(tornado.web.RequestHandler):
+    """POST listener that updates cookies if the secret keys match up with
+    usernames.
+    """
     def post(self):
         username = self.get_argument("username")
         secretkey = self.get_argument("secretkey")
@@ -35,6 +42,10 @@ class CookieHandler(tornado.web.RequestHandler):
 
 
 class SocketHandler(tornado.websocket.WebSocketHandler):
+    """Websocket handler for the program.  Contains most of the application
+    logic since websockets are the primary form of communication with the
+    client.
+    """
     sockets_list = []
 
     def open(self):
@@ -70,10 +81,8 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                             return
                         elif data["secretkey"]:
                             if data["secretkey"] not in user_db:
-                                print("secret key not existent")
                                 return
                             elif user_db[data["secretkey"]] != data["username"]:
-                                print("secret key wrong")
                                 return
                             del user_db[client_id]
                             response = {"act": "auth",
@@ -94,6 +103,11 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
                     print("response: " + str(response))
                     self.write_message(response)
 
+                debug_response = {"act": "chat",
+                                  "from": "debug",
+                                  "message": str(response)}
+                self.write_message(json.dumps(debug_response))
+
             elif action == "chat":
                 response = {"act": "chat",
                             "from": user_db[client_id],
@@ -108,22 +122,13 @@ class SocketHandler(tornado.websocket.WebSocketHandler):
         except ValueError:
             self.log_exception(ValueError, "Badly formatted message: " + msg, "")
             return
-        except KeyError:
-            self.log_exception(KeyError, "Message received without action: " + msg, "")
-            return
 
     def on_connection_close(self):
         self.sockets_list.remove(self)
 
 
-class GameInstance(object):
-    pass
-
-
-gameInstanceTracker = {}
-
-
 def main():
+    """Entry point to the program."""
     parse_command_line()
     application = tornado.web.Application(
         [(r"/", MainHandler),
