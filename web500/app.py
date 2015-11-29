@@ -1,27 +1,11 @@
-"""Application and presentation logic for web500.
+"""Defines the Flask application itself for web500.
 """
 
-from flask import Flask, render_template, session, request, redirect, url_for
-import web500.config
+from flask import Flask
+
 app = Flask(__name__)
+
+import web500.config
+import web500.routes
+
 app.config.from_object(web500.config)
-
-
-@app.route('/')
-def index():
-    """Handles the index page"""
-    if 'username' not in session:
-        return render_template("login.html")
-    return render_template("index.html")
-
-@app.route('/login', methods=["POST"])
-def login():
-    """Authenticates new users"""
-    session['username'] = request.form['username']
-    return redirect(url_for("index"))
-
-@app.route('/logout')
-def logout():
-    """Unsets the currently logged-in session"""
-    session.pop("username", None)
-    return redirect(url_for("index"))
