@@ -43,7 +43,7 @@ def main():
          (r"/game/ws", GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(app)))])
     application.listen(options.options.port)
-    logging.getLogger("tornado.general").info("Server is starting")
+    logging.getLogger("tornado.general").info("Server is starting on port {}".format(options.options.port))
     tornado.ioloop.IOLoop.instance().start()
 
 
