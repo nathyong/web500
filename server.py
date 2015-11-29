@@ -11,7 +11,7 @@ import tornado.options as options
 from tornado.web import FallbackHandler
 from tornado.websocket import WebSocketHandler
 from tornado.wsgi import WSGIContainer
-from flask import Flask
+from flask import Flask, render_template
 
 import web500.config
 
@@ -28,7 +28,7 @@ app.settings = web500.config.settings
 @app.route('/')
 def index():
     """Handles the index page"""
-    return """<html><head></head><body></body></html>"""
+    return render_template("index.html")
 
 
 class ChatSocketHandler(WebSocketHandler):
