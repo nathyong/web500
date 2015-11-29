@@ -1,3 +1,6 @@
+"""Application and presentation logic for web500.
+"""
+
 from flask import Flask, render_template
 import web500.config
 
