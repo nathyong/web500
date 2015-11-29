@@ -3,7 +3,7 @@
 
 from flask import Flask, render_template, session, request, redirect, url_for
 from web500.app import app
-from web500.db import query_db
+from web500.db import query_db, update_db
 
 @app.route('/')
 def index():
@@ -17,8 +17,10 @@ def login():
     """Authenticates new users"""
     if request.method == "POST":
         if not query_db("select * from users where username = ?",
-                        request.form['username']):
+                        [request.form['username']]):
             session['username'] = request.form['username']
+            update_db("insert into users (username) values (?)",
+                      [request.form['username']])
             return redirect(url_for("index"))
         else:
             return render_template("login.html", invalid_login=True)
