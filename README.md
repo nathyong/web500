@@ -8,6 +8,6 @@ An online implementation of the [500 card game].
 
 - Install dependencies with `pip install -r requirements.txt`
 - Configure the server by editing `web500/config.py`
-- Start the server with `python web500.py`.
+- Start the server with `python server.py`.
 - If you didn't configure the server, the default instance can be accessed at
   http://localhost:8888/
