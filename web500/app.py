@@ -3,9 +3,8 @@
 
 from flask import Flask, render_template, session, request, redirect, url_for
 import web500.config
-
 app = Flask(__name__)
-app.secret_key = web500.config.settings['secret_key']
+app.config.from_object(web500.config)
 
 
 @app.route('/')
