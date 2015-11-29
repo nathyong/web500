@@ -13,12 +13,16 @@ from tornado.websocket import WebSocketHandler
 from tornado.wsgi import WSGIContainer
 from flask import Flask
 
+import web500.config
+
+
 options.define("port",
                default=8888,
                help="run on the given port",
                type=int)
 
 app = Flask(__name__)
+app.settings = web500.config.settings
 
 
 @app.route('/')
