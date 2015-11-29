@@ -2,6 +2,7 @@
 """The main entry point for the Web500 program.
 """
 
+import logging
 import sqlite3
 import tornado.ioloop
 import tornado.web
@@ -42,6 +43,7 @@ def main():
          (r"/game/ws", GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(app)))])
     application.listen(options.options.port)
+    logging.getLogger("tornado.general").info("Server is starting")
     tornado.ioloop.IOLoop.instance().start()
 
 
