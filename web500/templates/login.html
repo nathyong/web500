@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+  <h1>welcome to web500</h1>
+  <form action="login" method="post">
+    <label for="username">Pick a username:</label>
+    <input type="text" name="username" autofocus="true" required="required"></input>
+    <input type="submit" value="Login"></input>
+  </form>
+{% endblock %}
