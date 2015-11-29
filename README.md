@@ -2,4 +2,4 @@
 `python server.py`
 
 #Connect to the server
-Open up *local ip address*:8888
+Default instance can be accessed at http://localhost:8888/
