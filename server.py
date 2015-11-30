@@ -18,9 +18,6 @@ options.define("port",
                help="run on the given port",
                type=int)
 
-class ChatSocketHandler(WebSocketHandler):
-    pass
-
 
 class GameSocketHandler(WebSocketHandler):
     pass
@@ -30,7 +27,7 @@ def main():
     """Entry point to the program."""
     options.parse_command_line()
     application = tornado.web.Application(
-        [(r"/chat/ws", ChatSocketHandler),
+        [(r"/chat/ws", web500.ChatSocketHandler),
          (r"/game/ws", GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(web500.app)))])
     application.listen(options.options.port)

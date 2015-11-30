@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://" + location.host + "/socket");
+var ws = new WebSocket("ws://" + location.host + "/chat/ws");
 ws.onopen = function() {
     ws.send(JSON.stringify({act : 'auth'}));
 };
