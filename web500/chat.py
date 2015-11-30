@@ -24,6 +24,8 @@ class ChatSocketHandler(WebSocketHandler):
     initial handshake, and sessions with invalid cookies are dropped.
     """
 
+    sockets_list = []
+
     def get_flask_session(self):
         """Unencrypts a Flask encrypted session cookie.
 
@@ -39,16 +41,23 @@ class ChatSocketHandler(WebSocketHandler):
     def get(self, *args, **kwargs):
         cookie_data = self.get_flask_session()
         if "username" not in cookie_data:
-            app.logger.warning("Unauthorised user tried to connect to chat")
+            app.logger.warning("chat: unauthorised user tried to connect to chat")
             return
         super(ChatSocketHandler, self).get(*args, **kwargs)
 
     def open(self):
-        print("WebSocket opened")
+        self.sockets_list.append(self)
+        app.logger.info("chat: socket connection opened")
 
     def on_message(self, message):
-        print(message)
-        self.write_message(message)
+        contents = json.loads(message)
+        session = self.get_flask_session()
+        response = {"act": "chat",
+                    "from": session["username"],
+                    "message": contents["message"]}
+        for sock in self.sockets_list:
+            sock.write_message(response)
 
     def on_close(self):
-        print("WebSocket closed")
+        self.sockets_list.remove(self)
+        app.logger.info("chat: socket connection closed")

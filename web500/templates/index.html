@@ -4,19 +4,13 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-  <h1>Index</h1>
-  <p class="important">
-    Welcome on my awesome homepage.
-    <h1>Username: <input type="text" placeholder="anonymous" id="username" />, secret key: <span id="secretkey">undefined</span></h1>
-    <div id="error">
-        That username is already taken.<span id="login"> If it belongs to you, enter your secret key: <input type="text" placeholder="12345" id="keyprompt" /></span>
-    </div>
+  <h1>web500</h1>
   <table id="msglist">
       <tbody>
           <tr><th>user</th><th>messages</th></tr>
       </tbody>
   </table>
-  <form id="chatter">
+  <form>
       <label for="msgbox">Message:</label><input type="textarea" name="msgbox" id="msgbox"></input>
       <input type="submit" onclick="sendmsg(); return false;" value="Send"></input>
   </form>
