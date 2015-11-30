@@ -4,6 +4,7 @@
 import flask.sessions
 import json
 import tornado.web
+from flask import Markup
 from tornado.websocket import WebSocketHandler
 from itsdangerous import URLSafeTimedSerializer
 
@@ -54,7 +55,7 @@ class ChatSocketHandler(WebSocketHandler):
         session = self.get_flask_session()
         response = {"act": "chat",
                     "from": session["username"],
-                    "message": contents["message"]}
+                    "message": Markup.escape(contents["message"])}
         for sock in self.sockets_list:
             sock.write_message(response)
 
