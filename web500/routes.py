@@ -15,6 +15,9 @@ def index():
 @app.route('/login', methods=["GET", "POST"])
 def login():
     """Authenticates new users"""
+    if 'username' in session:
+        return redirect(url_for("index"))
+
     if request.method == "POST":
         if not query_db("select * from users where username = ?",
                         [request.form['username']]):
