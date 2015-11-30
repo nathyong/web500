@@ -11,7 +11,7 @@
       </tbody>
   </table>
   <form>
-      <label for="msgbox">Message:</label><input type="textarea" name="msgbox" id="msgbox"></input>
+      <label for="msgbox">Message:</label><input type="text" autofocus="true" name="msgbox" id="msgbox"></input>
       <input type="submit" onclick="sendmsg(); return false;" value="Send"></input>
   </form>
   Logged in as {{ session['username'] }}.  <a href="/logout">Log out</a>
