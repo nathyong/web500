@@ -22,13 +22,12 @@ ws.onmessage = function(evt) {
     }
 };
 
-function sendmsg() {
+function sendmsg(msg) {
     data = {
         act : 'chat',
-        message : $('#msgbox').val(),
+        message : msg,
     };
     ws.send(JSON.stringify(data));
-    $('#msgbox').val('');
 }
 
 var msg_height = 0;
@@ -38,3 +37,14 @@ function add_msg(user, msg) {
     msg_height += parseInt($('#msglist li').last().height());
     $('#msglist').stop().animate({scrollTop: msg_height});
 }
+
+
+$('#msgform').submit(function(e) {
+    e.preventDefault();
+    var msg = $('#msgbox').val();
+    if (msg) {
+        sendmsg(msg);
+    }
+    $('#msgbox').val('');
+});
+
