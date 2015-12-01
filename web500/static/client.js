@@ -1,14 +1,14 @@
 var ws = new WebSocket("ws://" + location.host + "/chat/ws");
 
 ws.onopen = function() {
-    $('#msglist').append('<tr class="chatline"><td class="prefix">—</td><td class="message">Connected to chat server</td></tr>');
+    add_msg('chatbot', 'Connected to chat server! Play nice!');
 };
 
 ws.onmessage = function(evt) {
     data = JSON.parse(evt.data);
     switch (data.act) {
         case 'chat':
-            $('#msglist tr:last').after('<tr class="chatline"><td class="prefix">' + data.from + ':</td><td class="message">' + data.message + '</td></tr>');
+            add_msg(data.from, data.message);
             break;
         case 'users':
             $('#onlineusers ul').empty();
@@ -29,4 +29,12 @@ function sendmsg() {
     };
     ws.send(JSON.stringify(data));
     $('#msgbox').val('');
+}
+
+var msg_height = 0;
+
+function add_msg(user, msg) {
+    $('#msglist').append('<li class="chatline ' + user + '"><span class="prefix">' + user + ': </span>' + msg + '</li>');
+    msg_height += parseInt($('#msglist li').last().height());
+    $('#msglist').stop().animate({scrollTop: msg_height});
 }
