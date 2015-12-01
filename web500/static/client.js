@@ -33,11 +33,14 @@ function sendmsg(msg) {
 var msg_height = 0;
 
 function add_msg(user, msg) {
-    $('#msglist').append('<li class="chatline ' + user + '"><span class="prefix">' + user + ': </span>' + msg + '</li>');
+    var chatline_classes = ['chatline'];
+    if (user === 'chatbot') {
+        chatline_classes.push('chatline-announce');
+    }
+    $('#msglist').append('<li class="' + chatline_classes.join(' ') + '"><span class="prefix">' + user + ': </span>' + msg + '</li>');
     msg_height += parseInt($('#msglist li').last().height());
     $('#msglist').stop().animate({scrollTop: msg_height});
 }
-
 
 $('#msgform').submit(function(e) {
     e.preventDefault();

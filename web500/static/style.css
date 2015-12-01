@@ -16,17 +16,17 @@
     word-break: break-all;
 }
 
-.chatbot {
-    font-weight: bold;
-    font-style: italic;
-}
-
 .chatline span {
     font-weight: bold;
 }
 
 .chatline:nth-child(even) {
     background-color: #f2f2f2;
+}
+
+.chatline-announce {
+    font-weight: bold;
+    font-style: italic;
 }
 
 #msgform input {
