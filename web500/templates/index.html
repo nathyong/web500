@@ -5,19 +5,20 @@
 {% endblock %}
 {% block content %}
   <h1>web500</h1>
-  <table id="msglist">
-      <tbody>
-      </tbody>
-  </table>
+  <div id="chatbox">
+      <ul id="msglist"></ul>
+      <form id="msgform">
+          <button>Send</button>
+          <span>
+              <input type="text" autofocus="true" placeholder="Say something nice" name="msgbox" id="msgbox" />
+          </span>
+      </form>
+  </div>
   <div id="onlineusers">
       <h3>Online Users</h3>
       <ul>
       </ul>
   </div>
-  <form>
-      <label for="msgbox">Message:</label><input type="text" autofocus="true" name="msgbox" id="msgbox"></input>
-      <input type="submit" onclick="sendmsg(); return false;" value="Send"></input>
-  </form>
   Logged in as {{ session['username'] }}.  <a href="/logout">Log out</a>
   <script type="text/javascript" src="static/client.js"></script>
 {% endblock %}

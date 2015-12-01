@@ -1,14 +1,14 @@
 var ws = new WebSocket("ws://" + location.host + "/chat/ws");
 
 ws.onopen = function() {
-    $('#msglist').append('<tr class="chatline"><td class="prefix">—</td><td class="message">Connected to chat server</td></tr>');
+    add_msg('chatbot', 'Connected to chat server! Play nice!');
 };
 
 ws.onmessage = function(evt) {
     data = JSON.parse(evt.data);
     switch (data.act) {
         case 'chat':
-            $('#msglist tr:last').after('<tr class="chatline"><td class="prefix">' + data.from + ':</td><td class="message">' + data.message + '</td></tr>');
+            add_msg(data.from, data.message);
             break;
         case 'users':
             $('#onlineusers ul').empty();
@@ -22,11 +22,29 @@ ws.onmessage = function(evt) {
     }
 };
 
-function sendmsg() {
+function sendmsg(msg) {
     data = {
         act : 'chat',
-        message : $('#msgbox').val(),
+        message : msg,
     };
     ws.send(JSON.stringify(data));
-    $('#msgbox').val('');
 }
+
+function add_msg(user, msg) {
+    var chatline_classes = ['chatline'];
+    if (user === 'chatbot') {
+        chatline_classes.push('chatline-announce');
+    }
+    $('#msglist').append('<li class="' + chatline_classes.join(' ') + '"><span class="prefix">' + user + ': </span>' + msg + '</li>');
+    $('#msglist').scrollTop($("#msglist")[0].scrollHeight);
+}
+
+$('#msgform').submit(function(e) {
+    e.preventDefault();
+    var msg = $('#msgbox').val();
+    if (msg) {
+        sendmsg(msg);
+    }
+    $('#msgbox').val('');
+});
+
