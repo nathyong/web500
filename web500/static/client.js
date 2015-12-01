@@ -30,16 +30,13 @@ function sendmsg(msg) {
     ws.send(JSON.stringify(data));
 }
 
-var msg_height = 0;
-
 function add_msg(user, msg) {
     var chatline_classes = ['chatline'];
     if (user === 'chatbot') {
         chatline_classes.push('chatline-announce');
     }
     $('#msglist').append('<li class="' + chatline_classes.join(' ') + '"><span class="prefix">' + user + ': </span>' + msg + '</li>');
-    msg_height += parseInt($('#msglist li').last().height());
-    $('#msglist').stop().animate({scrollTop: msg_height});
+    $('#msglist').scrollTop($("#msglist")[0].scrollHeight);
 }
 
 $('#msgform').submit(function(e) {
