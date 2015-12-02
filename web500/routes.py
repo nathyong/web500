@@ -1,9 +1,10 @@
 """Defines different Flask routes for the actual server for web500.
 """
 
-from flask import Flask, render_template, session, request, redirect, url_for
+from flask import render_template, session, request, redirect, url_for
 from web500.app import app
 from web500.db import query_db, update_db
+from web500.room import get_room
 
 @app.route('/')
 def index():
@@ -35,3 +36,16 @@ def logout():
     """Unsets the currently logged-in session"""
     session.pop("username", None)
     return redirect(url_for("index"))
+
+@app.route('/room/<room_id>')
+def room(room_id):
+    """Allows users to connect to a room together, to chat and play a game of
+    500.
+    """
+    return get_room(room_id).handle_route()
+
+@app.route('/room', methods=["POST"])
+def new_room():
+    """Sets up a new room and redirects the user to that room.
+    """
+    return redirect(url_for("room", room_id=get_room().room_id))

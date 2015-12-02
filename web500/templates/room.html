@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
-{% block title %}Index{% endblock %}
-{% block head %}
-  {{ super() }}
-{% endblock %}
+{% block title %}Game{% endblock %}
 {% block content %}
-  <h1>web500</h1>
+  <h1>web500 ({{ room_id }})</h1>
+  {% if invalid_login %}
+  <p>Username is taken</p>
+  {% endif %}
   <div id="chatbox">
       <ul id="msglist"></ul>
       <form id="msgform">
@@ -19,9 +19,5 @@
       <ul>
       </ul>
   </div>
-  <div id="newgamebox">
-    <form action="/room" method="post"><button>Start new game</button></form>
-  </div>
-  Logged in as {{ session['username'] }}.  <a href="/logout">Log out</a>
   <script type="text/javascript" src="{{ url_for('static', filename='client.js') }}"></script>
 {% endblock %}
