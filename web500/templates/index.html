@@ -20,5 +20,5 @@
       </ul>
   </div>
   Logged in as {{ session['username'] }}.  <a href="/logout">Log out</a>
-  <script type="text/javascript" src="static/client.js"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='client.js') }}"></script>
 {% endblock %}
