@@ -14,7 +14,6 @@ from flask import render_template, session, abort, Markup
 _rooms = {}
 id_length = 5
 
-#pylint: disable=R0921
 class Room(object):
     """Represents a room, where people can do things together.  Conceptually
     this class ties together the page rendering, chat and game services of
