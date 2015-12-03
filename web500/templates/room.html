@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Game{% endblock %}
+{% block content %}
+  <h1>web500 ({{ room_id }})</h1>
+  {% if invalid_login %}
+  <p>Username is taken</p>
+  {% endif %}
+  <div id="chatbox">
+      <ul id="msglist"></ul>
+      <form id="msgform">
+          <button>Send</button>
+          <span>
+              <input type="text" autofocus="true" placeholder="Say something nice" name="msgbox" id="msgbox" />
+          </span>
+      </form>
+  </div>
+  <div id="onlineusers">
+      <h3>Online Users</h3>
+      <ul>
+      </ul>
+  </div>
+  <script type="text/javascript" src="{{ url_for('static', filename='client.js') }}"></script>
+{% endblock %}

@@ -5,20 +5,8 @@
 {% endblock %}
 {% block content %}
   <h1>web500</h1>
-  <div id="chatbox">
-      <ul id="msglist"></ul>
-      <form id="msgform">
-          <button>Send</button>
-          <span>
-              <input type="text" autofocus="true" placeholder="Say something nice" name="msgbox" id="msgbox" />
-          </span>
-      </form>
-  </div>
-  <div id="onlineusers">
-      <h3>Online Users</h3>
-      <ul>
-      </ul>
+  <div id="newgamebox">
+    <form action="/room" method="post"><button>Start new game</button></form>
   </div>
   Logged in as {{ session['username'] }}.  <a href="/logout">Log out</a>
-  <script type="text/javascript" src="static/client.js"></script>
 {% endblock %}
