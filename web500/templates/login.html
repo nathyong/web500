@@ -6,8 +6,11 @@
   <p>Username is taken</p>
   {% endif %}
   <form action="login" method="post">
+    {% if 'room' in request.args %}
+    <input type="hidden" name="room" value="{{request.args['room']}}" />
+    {% endif %}
     <label for="username">Pick a username:</label>
-    <input type="text" name="username" autofocus="true" required="required"></input>
-    <input type="submit" value="Login"></input>
+    <input type="text" name="username" autofocus="true" required="required" />
+    <input type="submit" value="Login" />
   </form>
 {% endblock %}

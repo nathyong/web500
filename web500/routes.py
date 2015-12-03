@@ -25,7 +25,10 @@ def login():
             session['username'] = request.form['username']
             update_db("insert into users (username) values (?)",
                       [request.form['username']])
-            return redirect(url_for("index"))
+            if 'room' in request.form:
+                return redirect(url_for("room", room_id=request.form['room']))
+            else:
+                return redirect(url_for("index"))
         else:
             return render_template("login.html", invalid_login=True)
     else:
@@ -42,7 +45,11 @@ def room(room_id):
     """Allows users to connect to a room together, to chat and play a game of
     500.
     """
-    return get_room(room_id).handle_route()
+    r = get_room(room_id)  # triggers a 404 if the room doesn't exist
+    if 'username' not in session:
+        return redirect("{}?room={}".format(url_for("login"), room_id))
+    else:
+        return r.handle_route()
 
 @app.route('/room', methods=["POST"])
 def new_room():
