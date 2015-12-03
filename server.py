@@ -27,7 +27,8 @@ def main():
     """Entry point to the program."""
     options.parse_command_line()
     application = tornado.web.Application(
-        [(r"/chat/ws", web500.ChatSocketHandler),
+        [(r"//chat/ws", web500.ChatSocketHandler),
+         (r"/room/([a-z0-9]+)/chat/ws", web500.ChatSocketHandler),
          (r"/game/ws", GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(web500.app)))])
     application.listen(options.options.port)

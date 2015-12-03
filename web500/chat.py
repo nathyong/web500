@@ -2,13 +2,12 @@
 """
 
 import flask.sessions
-import json
 import tornado.web
-from flask import Markup
 from tornado.websocket import WebSocketHandler
 from itsdangerous import URLSafeTimedSerializer
 
 from web500.app import app
+from web500.room import get_room
 
 
 flaskSessionInterface = flask.sessions.SecureCookieSessionInterface()
@@ -27,22 +26,15 @@ class ChatSocketHandler(WebSocketHandler):
     Cookies from the corresponding Flask session are inspected during the
     initial handshake, and sessions with invalid cookies are dropped.
 
-    .. attribute:: connected_sessions
+    .. attribute:: room
 
-       A dictionary of format {user: socket}, used to represent the users who
-       are connected to the chat server.
+       A reference to the `web500.room.Room` which this websocket connection is
+       associated to.
+
+    .. attribute:: user
+
+       The nickname of the user who is connected through this socket.
     """
-
-    connected_sessions = {}
-
-    def send_user_list(self):
-        """Sends the list of users to all connected users.
-        """
-        user_list_response = {"act": "users",
-                              "users": list(self.connected_sessions.keys())}
-        for sock in self.connected_sessions.values():
-            sock.write_message(user_list_response)
-
 
     def get_flask_session(self):
         """Unencrypts a Flask encrypted session cookie.
@@ -53,31 +45,29 @@ class ChatSocketHandler(WebSocketHandler):
         max_age = total_seconds(app.permanent_session_lifetime)
         return cookieSerializer.loads(cookie, max_age=max_age)
 
+    def __init__(self, *args, **kwargs):
+        self.connected_sessions = {}
+        self.room = None
+        self.user = None
+        super().__init__(*args, **kwargs)
+
     @tornado.web.asynchronous
-    def get(self, *args, **kwargs):
+    def get(self, room_id=None, *args, **kwargs):
         session = self.get_flask_session()
         if "username" not in session:
             app.logger.warning("chat: unauthorised user tried to connect to chat")
             return
-        super(ChatSocketHandler, self).get(*args, **kwargs)
+        self.room = get_room(room_id)
+        self.user = session["username"]
+        super().get(*args, **kwargs)
 
     def open(self):
-        session = self.get_flask_session()
-        self.connected_sessions[session["username"]] = self
-        app.logger.info("chat: socket connection opened")
-        self.send_user_list()
+        self.room.add_chat_connection(self, self.user)
+        app.logger.info("chat: socket connection opened at {}".format(self.room.room_id))
 
     def on_message(self, message):
-        contents = json.loads(message)
-        session = self.get_flask_session()
-        response = {"act": "chat",
-                    "from": session["username"],
-                    "message": Markup.escape(contents["message"])}
-        for sock in self.connected_sessions.values():
-            sock.write_message(response)
+        self.room.handle_chat_message(message, self.user)
 
     def on_close(self):
-        session = self.get_flask_session()
-        del self.connected_sessions[session["username"]]
-        app.logger.info("chat: socket connection closed")
-        self.send_user_list()
+        self.room.remove_chat_connection(self)
+        app.logger.info("chat: socket connection closed at {}".format(self.room.room_id))
