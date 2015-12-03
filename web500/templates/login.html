@@ -5,7 +5,7 @@
   {% if invalid_login %}
   <p>Username is taken</p>
   {% endif %}
-  <form action="login" method="post">
+  <form action="" method="post">
     {% if 'room' in request.args %}
     <input type="hidden" name="room" value="{{request.args['room']}}" />
     {% endif %}
