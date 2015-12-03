@@ -52,7 +52,7 @@ class ChatSocketHandler(WebSocketHandler):
         super().__init__(*args, **kwargs)
 
     @tornado.web.asynchronous
-    def get(self, room_id=None, *args, **kwargs):
+    def get(self, room_id, *args, **kwargs):
         session = self.get_flask_session()
         if "username" not in session:
             app.logger.warning("chat: unauthorised user tried to connect to chat")
