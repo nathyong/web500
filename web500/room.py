@@ -65,6 +65,7 @@ class Room(object):
         """Remove a socket from the list of connected sockets.
         """
         del self.chat_sockets[socket]
+        self.send_user_list()
 
     def send_user_list(self):
         """Sends the list of users to all connected websockets for this
