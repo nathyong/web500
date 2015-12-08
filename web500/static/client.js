@@ -1,4 +1,4 @@
-var ws = new WebSocket("ws://" + location.host + location.pathname + '/chat/ws');
+var ws = new WebSocket("ws://" + location.host + location.pathname + '/ws');
 
 ws.onopen = function() {
     add_msg('chatbot', 'Connected to chat server! Play nice!');

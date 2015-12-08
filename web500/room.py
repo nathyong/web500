@@ -1,6 +1,6 @@
-"""A class, `Room`, which implements handlers for both chat and socket
-interfaces for a particular room, where people can get together and chat or play
-a game of 500 together.
+"""A class, `Room`, which implements handlers for the socket interfaces for
+a particular room, where people can get together and chat or play a game of 500
+together.
 
 Implements a factory/singleton function, `get_room`, which can be used to get
 references to rooms.
@@ -10,6 +10,8 @@ import json
 import random
 import string
 from flask import render_template, session, abort, Markup
+
+from web500.app import app
 
 _rooms = {}
 id_length = 5
@@ -25,7 +27,7 @@ class Room(object):
        representing a unique ID of a room.  Used in the URL of the room, as well
        as to distinguish different rooms.
 
-    .. attribute:: chat_sockets
+    .. attribute:: sockets
 
        A dictionary of format `{socket: user}`, used to represent the users who
        are connected to a particular room via chat.
@@ -33,7 +35,7 @@ class Room(object):
 
     def __init__(self, room_id):
         self.room_id = room_id
-        self.chat_sockets = {}
+        self.sockets = {}
 
     def handle_route(self):
         """Returns webpage contents suitable for passing to a Flask route
@@ -43,27 +45,39 @@ class Room(object):
         """
         return render_template("room.html", room_id=self.room_id)
 
-    def add_chat_connection(self, socket, name):
+    def add_connection(self, socket, name):
         """Register a new chat socket connection to this room, associated with
         a particular nickname for a user.
         """
-        self.chat_sockets[socket] = name
+        self.sockets[socket] = name
         self.send_user_list()
 
-    def handle_chat_message(self, message, name):
-        """Relay an incoming message from a particular user to all users.
+    def handle_message(self, message, name):
+        """Handle an incoming message based on the action encoded in the
+        message.  Uses runtime reflection/dispatch to determine what to do.
         """
         contents = json.loads(message)
+        try:
+            function_name = "_handle_" + contents["act"]
+            dispatch_function = getattr(self, function_name)
+            dispatch_function(contents, name)
+        except KeyError:
+            app.logger.warning("malformed message (no action): {}", message)
+        except AttributeError:
+            app.logger.warning("malformed message (bad action): {}", message)
+
+    def _handle_chat(self, contents, name):
+        """Process a chat message by relaying it to all other connected users.
+        """
         response = {"act": "chat",
                     "from": name,
                     "message": Markup.escape(contents["message"])}
-        for sock in self.chat_sockets:
-            sock.write_message(response)
+        self.broadcast(response)
 
-    def remove_chat_connection(self, socket):
+    def remove_connection(self, socket):
         """Remove a socket from the list of connected sockets.
         """
-        del self.chat_sockets[socket]
+        del self.sockets[socket]
         self.send_user_list()
 
     def send_user_list(self):
@@ -71,9 +85,25 @@ class Room(object):
         particular room.
         """
         user_list_response = {"act": "users",
-                              "users": list(set(self.chat_sockets.values()))}
-        for sock in self.chat_sockets:
-            sock.write_message(user_list_response)
+                              "users": list(set(self.sockets.values()))}
+        self.broadcast(user_list_response)
+
+    def broadcast(self, contents, users=None):
+        """Push out a message to several users, possibly all of them.
+
+        :arg contents: the message as a dictionary, or something else that can
+            be sent with `tornado.websocket.WebSocketHandler.write_message`.
+
+        :arg users: an iterable collection of users to match on and send to
+            specifically.  If `None`, then send to all users (all sockets).
+        """
+        if users is None:
+            sockets = self.sockets
+        else:
+            sockets = (s for s, n in self.sockets.items() if n in users)
+
+        for sock in sockets:
+            sock.write_message(contents)
 
 
 def generate_room_id():
