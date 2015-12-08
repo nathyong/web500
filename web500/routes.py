@@ -6,6 +6,18 @@ from web500.app import app
 from web500.db import query_db, update_db
 from web500.room import get_room
 
+_max_username_length = 15
+_reserved_usernames = ['chatbot']
+
+def _is_valid(username):
+    """Rules for validating usernames
+    """
+    if len(username) > _max_username_length:
+        return False
+    if username in _reserved_usernames:
+        return False
+    return True
+
 @app.route('/')
 def index():
     """Handles the index page"""
@@ -20,11 +32,10 @@ def login():
         return redirect(url_for("index"))
 
     if request.method == "POST":
-        if not query_db("select * from users where username = ?",
-                        [request.form['username']]):
-            session['username'] = request.form['username']
-            update_db("insert into users (username) values (?)",
-                      [request.form['username']])
+        username = request.form['username']
+        if _is_valid(username) and not query_db("select * from users where username = ?", [username]):
+            session['username'] = username
+            update_db("insert into users (username) values (?)", [username])
             if 'room' in request.form:
                 return redirect(url_for("room", room_id=request.form['room']))
             else:
