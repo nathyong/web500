@@ -1,4 +1,4 @@
-"""Chat logic for web500.  Implements a websocket handler for communication.
+"""Communication with the client for web500.  Implements a websocket handler.
 """
 
 import flask.sessions
@@ -20,8 +20,9 @@ def total_seconds(td):
     return td.days * 60 * 60 * 24 + td.seconds
 
 
-class ChatSocketHandler(WebSocketHandler):
-    """Implements an interface for communication with other users via chat.
+class GameSocketHandler(WebSocketHandler):
+    """Implements an interface for communication with other users, and for
+    facilitating the game itself.
 
     Cookies from the corresponding Flask session are inspected during the
     initial handshake, and sessions with invalid cookies are dropped.
@@ -55,19 +56,19 @@ class ChatSocketHandler(WebSocketHandler):
     def get(self, room_id, *args, **kwargs):
         session = self.get_flask_session()
         if "username" not in session:
-            app.logger.warning("chat: unauthorised user tried to connect to chat")
+            app.logger.warning("unauthorised user tried to connect via socket")
             return
         self.room = get_room(room_id)
         self.user = session["username"]
         super().get(*args, **kwargs)
 
     def open(self):
-        self.room.add_chat_connection(self, self.user)
-        app.logger.info("chat: socket connection opened at {}".format(self.room.room_id))
+        self.room.add_connection(self, self.user)
+        app.logger.info("socket connection opened at {}".format(self.room.room_id))
 
     def on_message(self, message):
-        self.room.handle_chat_message(message, self.user)
+        self.room.handle_message(message, self.user)
 
     def on_close(self):
-        self.room.remove_chat_connection(self)
-        app.logger.info("chat: socket connection closed at {}".format(self.room.room_id))
+        self.room.remove_connection(self)
+        app.logger.info("socket connection closed at {}".format(self.room.room_id))

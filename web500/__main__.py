@@ -7,7 +7,6 @@ import tornado.ioloop
 import tornado.web
 import tornado.options as options
 from tornado.web import FallbackHandler
-from tornado.websocket import WebSocketHandler
 from tornado.wsgi import WSGIContainer
 
 import web500
@@ -19,16 +18,11 @@ options.define("port",
                type=int)
 
 
-class GameSocketHandler(WebSocketHandler):
-    pass
-
-
 def main():
     """Entry point to the program."""
     options.parse_command_line()
     application = tornado.web.Application(
-        [(r"/room/([a-z0-9]+)/chat/ws", web500.ChatSocketHandler),
-         (r"/game/ws", GameSocketHandler),
+        [(r"/room/([a-z0-9]+)/chat/ws", web500.GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(web500.app)))])
     application.listen(options.options.port)
     logger = logging.getLogger("tornado.general")

@@ -1,6 +1,6 @@
-"""A class, `Room`, which implements handlers for both chat and socket
-interfaces for a particular room, where people can get together and chat or play
-a game of 500 together.
+"""A class, `Room`, which implements handlers for the socket interfaces for
+a particular room, where people can get together and chat or play a game of 500
+together.
 
 Implements a factory/singleton function, `get_room`, which can be used to get
 references to rooms.
@@ -25,7 +25,7 @@ class Room(object):
        representing a unique ID of a room.  Used in the URL of the room, as well
        as to distinguish different rooms.
 
-    .. attribute:: chat_sockets
+    .. attribute:: sockets
 
        A dictionary of format `{socket: user}`, used to represent the users who
        are connected to a particular room via chat.
@@ -33,7 +33,7 @@ class Room(object):
 
     def __init__(self, room_id):
         self.room_id = room_id
-        self.chat_sockets = {}
+        self.sockets = {}
 
     def handle_route(self):
         """Returns webpage contents suitable for passing to a Flask route
@@ -43,27 +43,27 @@ class Room(object):
         """
         return render_template("room.html", room_id=self.room_id)
 
-    def add_chat_connection(self, socket, name):
+    def add_connection(self, socket, name):
         """Register a new chat socket connection to this room, associated with
         a particular nickname for a user.
         """
-        self.chat_sockets[socket] = name
+        self.sockets[socket] = name
         self.send_user_list()
 
-    def handle_chat_message(self, message, name):
+    def handle_message(self, message, name):
         """Relay an incoming message from a particular user to all users.
         """
         contents = json.loads(message)
         response = {"act": "chat",
                     "from": name,
                     "message": Markup.escape(contents["message"])}
-        for sock in self.chat_sockets:
+        for sock in self.sockets:
             sock.write_message(response)
 
-    def remove_chat_connection(self, socket):
+    def remove_connection(self, socket):
         """Remove a socket from the list of connected sockets.
         """
-        del self.chat_sockets[socket]
+        del self.sockets[socket]
         self.send_user_list()
 
     def send_user_list(self):
@@ -71,8 +71,8 @@ class Room(object):
         particular room.
         """
         user_list_response = {"act": "users",
-                              "users": list(set(self.chat_sockets.values()))}
-        for sock in self.chat_sockets:
+                              "users": list(set(self.sockets.values()))}
+        for sock in self.sockets:
             sock.write_message(user_list_response)
 
 
