@@ -72,7 +72,7 @@ class Room(object):
         response = {"act": "chat",
                     "from": name,
                     "message": Markup.escape(contents["message"])}
-        broadcast(response, self.sockets)
+        self.broadcast(response)
 
     def remove_connection(self, socket):
         """Remove a socket from the list of connected sockets.
@@ -86,20 +86,24 @@ class Room(object):
         """
         user_list_response = {"act": "users",
                               "users": list(set(self.sockets.values()))}
-        broadcast(user_list_response, self.sockets)
+        self.broadcast(user_list_response)
 
+    def broadcast(self, contents, users=None):
+        """Push out a message to several users, possibly all of them.
 
-def broadcast(contents, sockets):
-    """Push a message out over possibly many sockets.
+        :arg contents: the message as a dictionary, or something else that can
+            be sent with `tornado.websocket.WebSocketHandler.write_message`.
 
-    :arg contents: the message as a dictionary, or something else that can be
-        sent with `tornado.websocket.WebSocketHandler.write_message`.
+        :arg users: an iterable collection of users to match on and send to
+            specifically.  If `None`, then send to all users (all sockets).
+        """
+        if users is None:
+            sockets = self.sockets
+        else:
+            sockets = (s for s, n in self.sockets.items() if n in users)
 
-    :arg sockets: an iterable collection of
-        `tornado.websocket.WebSocketHandler` objects.
-    """
-    for sock in sockets:
-        sock.write_message(contents)
+        for sock in sockets:
+            sock.write_message(contents)
 
 
 def generate_room_id():
