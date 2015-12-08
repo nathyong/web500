@@ -11,6 +11,8 @@ import random
 import string
 from flask import render_template, session, abort, Markup
 
+from web500.app import app
+
 _rooms = {}
 id_length = 5
 
@@ -51,14 +53,26 @@ class Room(object):
         self.send_user_list()
 
     def handle_message(self, message, name):
-        """Relay an incoming message from a particular user to all users.
+        """Handle an incoming message based on the action encoded in the
+        message.  Uses runtime reflection/dispatch to determine what to do.
         """
         contents = json.loads(message)
+        try:
+            function_name = "_handle_" + contents["act"]
+            dispatch_function = getattr(self, function_name)
+            dispatch_function(contents, name)
+        except KeyError:
+            app.logger.warning("malformed message (no action): {}", message)
+        except AttributeError:
+            app.logger.warning("malformed message (bad action): {}", message)
+
+    def _handle_chat(self, contents, name):
+        """Process a chat message by relaying it to all other connected users.
+        """
         response = {"act": "chat",
                     "from": name,
                     "message": Markup.escape(contents["message"])}
-        for sock in self.sockets:
-            sock.write_message(response)
+        broadcast(response, self.sockets)
 
     def remove_connection(self, socket):
         """Remove a socket from the list of connected sockets.
@@ -72,8 +86,20 @@ class Room(object):
         """
         user_list_response = {"act": "users",
                               "users": list(set(self.sockets.values()))}
-        for sock in self.sockets:
-            sock.write_message(user_list_response)
+        broadcast(user_list_response, self.sockets)
+
+
+def broadcast(contents, sockets):
+    """Push a message out over possibly many sockets.
+
+    :arg contents: the message as a dictionary, or something else that can be
+        sent with `tornado.websocket.WebSocketHandler.write_message`.
+
+    :arg sockets: an iterable collection of
+        `tornado.websocket.WebSocketHandler` objects.
+    """
+    for sock in sockets:
+        sock.write_message(contents)
 
 
 def generate_room_id():
