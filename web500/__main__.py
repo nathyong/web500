@@ -22,7 +22,7 @@ def main():
     """Entry point to the program."""
     options.parse_command_line()
     application = tornado.web.Application(
-        [(r"/room/([a-z0-9]+)/chat/ws", web500.GameSocketHandler),
+        [(r"/room/([a-z0-9]+)/ws", web500.GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(web500.app)))])
     application.listen(options.options.port)
     logger = logging.getLogger("tornado.general")
