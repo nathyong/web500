@@ -3,14 +3,14 @@
 {% block content %}
   <h1>welcome to web500</h1>
   {% if invalid_login %}
-  <p>Username is taken</p>
+  <p>Nickname is taken or is too long (max: 15 chars).</p>
   {% endif %}
   <form action="" method="post">
     {% if 'room' in request.args %}
     <input type="hidden" name="room" value="{{request.args['room']}}" />
     {% endif %}
-    <label for="username">Pick a username:</label>
-    <input type="text" name="username" autofocus="true" required="required" />
+    <label for="username">Pick a nickname:</label>
+    <input type="text" name="username" maxlength="15" autofocus="true" required="required" />
     <input type="submit" value="Login" />
   </form>
 {% endblock %}
