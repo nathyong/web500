@@ -1,20 +1,29 @@
 <!doctype html>
 <html>
 <head>
-  {% block head %}
   <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>web500: {% block title %}{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-  <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.10.2.min.js') }}"></script>
+
+  {% block head %}
   {% endblock %}
 </head>
 <body>
-  <div id="content">
+  <div id="content" class="container-fluid">
     {% block content %}
     {% endblock %}
   </div>
   <div id="footer">
     By nathyong &amp; vinceau
   </div>
+  <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.10.2.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+  {% block scripts %}
+  {% endblock %}
 </body>
 </html>
