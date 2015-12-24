@@ -30,6 +30,5 @@ def ensure_unique_id():
             if new_id not in store.state['userids']:
                 break
 
-        store.dispatch({'action': AppAction.new_user,
-                        'id': new_id})
+        store.dispatch(AppAction.new_user, {'id': new_id})
         session['userid'] = new_id

@@ -28,7 +28,8 @@ def main():
     web500.app.logger.info("Server is starting on port {}"
                            .format(options.options.port))
 
-    web500.store.dispatch(web500.actions.AppAction.init)
+    web500.store._logger = web500.app.logger
+    web500.store.dispatch(web500.actions.AppAction.init, {})
     tornado.ioloop.IOLoop.instance().start()
 
 

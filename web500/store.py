@@ -1,17 +1,19 @@
-"""Defines the data stores for the web500 app.
+"""Defines the data store for the web500 app.
 """
 
 state = {}
 
-_handlers = []
+_handlers = {}
 _listeners = []
 
-def dispatch(action):
+_logger = None
+
+def dispatch(action, data):
     """Dispatch an action on the store, updating its contents and triggering
     possible updates.
     """
-    for fn in _handlers:
-        globals()['state'] = fn(action)
+    _log_debug('Dispatch: {}: {}'.format(action, data))
+    globals()['state'] = _handlers[action](data, state)
 
     for fn in _listeners:
         fn()
@@ -22,7 +24,13 @@ def subscribe(listener):
     """
     _listeners.append(listener)
 
-def register_handler(handler):
+def register_handler(action, handler):
     """Add a _pure_ handler to the list of handlers.
     """
-    _handlers.insert(0, handler)
+    _handlers[action] = handler
+
+def _log_debug(msg):
+    """Log a message on the debug level.
+    """
+    if _logger is not None:
+        _logger.debug(msg)
