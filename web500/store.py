@@ -23,6 +23,9 @@ def subscribe(listener):
     that unsubscribes the listener.
     """
     _listeners.append(listener)
+    def _unsubscribe():
+        _listeners.remove(listener)
+    return _unsubscribe
 
 def register_handler(action, handler):
     """Add a _pure_ handler to the list of handlers.
