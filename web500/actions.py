@@ -4,6 +4,8 @@
 from enum import Enum
 
 _make_enum_dict = lambda xs: {x: x.upper() for x in xs}
+_actions = ['init',
+            'new_user']
 
 AppAction = Enum('AppAction',
-                 _make_enum_dict(['init', 'new_user']))
+                 _make_enum_dict(_actions))
