@@ -1,7 +1,7 @@
 """Defines different Flask routes for the actual server for web500.
 """
 
-from flask import session, render_template, redirect, url_for
+from flask import session, render_template, redirect, url_for, abort
 import random
 import string
 
@@ -25,6 +25,8 @@ def index():
 def room(room_id):
     """Allows users to connect to a particular room.
     """
+    if room_id not in store.state['rooms']:
+        abort(404)
     return render_template("room.html", room_id=room_id)
 
 
