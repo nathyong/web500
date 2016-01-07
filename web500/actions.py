@@ -12,7 +12,7 @@ The data store pattern looks a bit like this currently:
 """
 
 from enum import Enum
-import web500.store
+from web500.store import handle
 
 _make_enum_dict = lambda xs: {x: x.upper() for x in xs}
 _actions = ['init',
@@ -22,12 +22,6 @@ _actions = ['init',
 
 AppAction = Enum('AppAction',
                  _make_enum_dict(_actions))
-
-
-def handle(action):
-    def _register_handler(f):
-        web500.store.register_handler(action, f)
-    return _register_handler
 
 
 @handle(AppAction.init)

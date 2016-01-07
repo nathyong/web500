@@ -29,6 +29,13 @@ def register_handler(action, handler):
     """
     _handlers[action] = handler
 
+def handle(action):
+    """Convenient decorator for registering pure handlers.
+    """
+    def _register_handler(f):
+        register_handler(action, f)
+    return _register_handler
+
 def _log_debug(msg):
     """Log a message on the debug level.
     """
