@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Game{% endblock %}
+{% block content %}
+  <h1>web500 ({{ room_id }})</h1>
+  {% if invalid_nickname %}
+  <p>Nickname is taken</p>
+  {% endif %}
+  <form id="nickname-form" action="/room/{{ room_id }}/join" method="POST">
+    <input type="text" autofocus="true" placeholder="Select a nickname" name="nickname" id="nickname-box" />
+    <input type="submit" value="Go!" />
+  </form>
+{% endblock %}
+

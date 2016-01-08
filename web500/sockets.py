@@ -4,10 +4,10 @@
 import flask.sessions
 import tornado.web
 from tornado.websocket import WebSocketHandler
-from itsdangerous import URLSafeTimedSerializer
 
 from web500.app import app
-from web500.room import get_room
+from web500.actions import AppAction
+import web500.store as store
 
 
 flaskSessionInterface = flask.sessions.SecureCookieSessionInterface()
@@ -29,8 +29,7 @@ class GameSocketHandler(WebSocketHandler):
 
     .. attribute:: room
 
-       A reference to the `web500.room.Room` which this websocket connection is
-       associated to.
+       The ID of the room that this connection is associated to.
 
     .. attribute:: user
 
@@ -50,25 +49,47 @@ class GameSocketHandler(WebSocketHandler):
         self.connected_sessions = {}
         self.room = None
         self.user = None
+        self.listener = None
         super().__init__(*args, **kwargs)
 
     @tornado.web.asynchronous
     def get(self, room_id, *args, **kwargs):
         session = self.get_flask_session()
-        if "username" not in session:
+        if 'userid' not in session:
             app.logger.warning("unauthorised user tried to connect via socket")
             return
-        self.room = get_room(room_id)
-        self.user = session["username"]
+        self.room = room_id
+        self.user = session['userid']
         super().get(*args, **kwargs)
 
     def open(self):
-        self.room.add_connection(self, self.user)
-        app.logger.info("socket connection opened at {}".format(self.room.room_id))
+        store.dispatch(AppAction.join_room, {'room_id': self.room,
+                                             'user_id': self.user})
+
+        def _react_messages(unconditional=False):
+            """Send messages when the internal state changes.
+            """
+            access_messages = lambda s: s['rooms'][self.room]['messages']
+            if store.changed(access_messages) or unconditional:
+                self.write_message({'messages': access_messages(store.state)})
+
+            access_users = lambda s: s['rooms'][self.room]['online_users']
+            if store.changed(access_users) or unconditional:
+                nicknames = store.state['rooms'][self.room]['nicknames']
+                online_nicks = [nicknames[userid]
+                                for userid in access_users(store.state)]
+                response = {'users': online_nicks}
+                self.write_message(response)
+
+        self.listener = store.subscribe(_react_messages)
+        _react_messages(unconditional=True)
 
     def on_message(self, message):
-        self.room.handle_message(message, self.user)
+        store.dispatch(AppAction.message_room, {'room_id': self.room,
+                                                'sender_id': self.user,
+                                                'message': message})
 
     def on_close(self):
-        self.room.remove_connection(self)
-        app.logger.info("socket connection closed at {}".format(self.room.room_id))
+        self.listener()
+        store.dispatch(AppAction.leave_room, {'room_id': self.room,
+                                              'user_id': self.user})

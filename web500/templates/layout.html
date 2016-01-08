@@ -8,7 +8,7 @@
   <title>web500: {% block title %}{% endblock %}</title>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" />
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/gen/style.css') }}" />
 
   {% block head %}
   {% endblock %}
@@ -21,7 +21,10 @@
   <div id="footer">
     By nathyong &amp; vinceau
   </div>
-  <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.10.2.min.js') }}"></script>
+  <div id="diagnostics">
+    ID: {{ session['userid'] }}
+  </div>
+  <script type="text/javascript" src="{{ url_for('static', filename='js/lib/jquery-1.10.2.min.js') }}"></script>
   <script type="text/javascript" src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
   {% block scripts %}
   {% endblock %}
