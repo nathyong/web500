@@ -4,7 +4,7 @@
 import random
 import string
 
-from flask import session, render_template, redirect, url_for, abort
+from flask import session, render_template, redirect, url_for, abort, request
 
 from web500.actions import AppAction
 from web500.app import app
@@ -29,7 +29,34 @@ def room(room_id):
     if room_id not in store.state['rooms']:
         abort(404)
     ensure_unique_id()
-    return render_template("room.html", room_id=room_id)
+
+    if session['userid'] not in store.state['rooms'][room_id]['nicknames']:
+        return render_template("register_nickname.html",
+                               room_id=room_id,
+                               invalid_nickname=request.args.get('invalid_nickname'))
+    else:
+        return render_template("room.html", room_id=room_id)
+
+
+@app.route('/room/<room_id>/join', methods=['POST'])
+def join_room(room_id):
+    """Register a nickname for a particular room.
+    """
+    if room_id not in store.state['rooms']:
+        abort(404)
+    ensure_unique_id()
+
+    nicknames = store.state['rooms'][room_id]['nicknames']
+    if request.form['nickname'] not in nicknames.values():
+        store.dispatch(AppAction.set_room_nickname,
+                       {'room_id': room_id,
+                        'user_id': session['userid'],
+                        'nickname': request.form['nickname']})
+        return redirect(url_for('room', room_id=room_id))
+
+    else:
+        return redirect(url_for('room', room_id=room_id,
+                                invalid_nickname=True))
 
 
 @app.route('/room', methods=['POST'])

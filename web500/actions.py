@@ -91,6 +91,7 @@ def join_room(data, store):
 def message_room(data, store):
     """Adds a message to the room message log.
     """
+    sender = store['rooms'][data['room_id']]['nicknames'][data['sender_id']]
     message = {'from': data['sender_id'],
                'messsage': data['message']}
     store['rooms'][data['room_id']]['messages'].append(message)
@@ -103,4 +104,13 @@ def leave_room(data, store):
     """Removes a user from a room.
     """
     store['rooms'][data['room_id']]['online_users'].remove(data['user_id'])
+    return store
+
+
+@handle(AppAction.set_room_nickname)
+@pure_arguments
+def set_room_nickname(data, store):
+    """Binds a user to a nickname for a particular room.
+    """
+    store['rooms'][data['room_id']]['nicknames'][data['user_id']] = data['nickname']
     return store
