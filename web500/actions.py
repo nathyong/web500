@@ -33,6 +33,7 @@ def pure_arguments(f):
     """Convenient decorator to deepcopy all arguments of a function before it is
     called.
     """
+    #pylint: disable=missing-docstring
     @functools.wraps(f)
     def wrapper(*args, **kwargs):
         pure_args = (deepcopy(arg) for arg in args)
