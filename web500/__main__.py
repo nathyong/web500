@@ -2,7 +2,6 @@
 """The main entry point for the Web500 program.
 """
 
-import logging
 import tornado.ioloop
 import tornado.web
 import tornado.options as options
@@ -10,7 +9,6 @@ from tornado.web import FallbackHandler
 from tornado.wsgi import WSGIContainer
 
 import web500
-from web500.db import get_db, query_db
 
 options.define("port",
                default=8888,
@@ -21,20 +19,17 @@ options.define("port",
 def main():
     """Entry point to the program."""
     options.parse_command_line()
+
     application = tornado.web.Application(
         [(r"/room/([a-z0-9]+)/ws", web500.GameSocketHandler),
          (r".*", FallbackHandler, dict(fallback=WSGIContainer(web500.app)))])
     application.listen(options.options.port)
-    logger = logging.getLogger("tornado.general")
-    with web500.app.app_context():
-        db = get_db()
-        if not query_db("""SELECT * FROM sqlite_master
-                        WHERE name ='users' and type='table';"""):
-            logger.info("Initialising database")
-            with web500.app.open_resource('schema.sql', mode='r') as f:
-                db.cursor().executescript(f.read())
-            db.commit()
-    logger.info("Server is starting on port {}".format(options.options.port))
+
+    web500.app.logger.info("Server is starting on port {}"
+                           .format(options.options.port))
+
+    web500.store._logger = web500.app.logger
+    web500.store.dispatch(web500.actions.AppAction.init, {})
     tornado.ioloop.IOLoop.instance().start()
 
 
