@@ -77,7 +77,6 @@ class GameSocketHandler(WebSocketHandler):
 
         self.listener = store.subscribe(_react_messages)
         _react_messages(unconditional=True)
-        app.logger.info("socket connection opened at {}".format(self.room))
 
     def on_message(self, message):
         store.dispatch(AppAction.message_room, {'room': self.room,
@@ -88,4 +87,3 @@ class GameSocketHandler(WebSocketHandler):
         self.listener()
         store.dispatch(AppAction.leave_room, {'room': self.room,
                                               'user': self.user})
-        app.logger.info("socket connection closed at {}".format(self.room))
