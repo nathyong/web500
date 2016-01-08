@@ -1,6 +1,7 @@
 """Defines the data store for the web500 app.
 """
 
+from datadiff import diff
 from pprint import pprint
 
 state = {}
@@ -26,7 +27,7 @@ def dispatch(action, data):
     _log_debug('Dispatch: {}: {}'.format(action, data))
     _last_state = state
     state = _handlers[action](data, state)
-    pprint(state)
+    print(diff(_last_state, state))
 
     for fn in _listeners:
         fn()
