@@ -4,7 +4,6 @@
 import flask.sessions
 import tornado.web
 from tornado.websocket import WebSocketHandler
-from itsdangerous import URLSafeTimedSerializer
 
 from web500.app import app
 from web500.actions import AppAction
@@ -30,8 +29,7 @@ class GameSocketHandler(WebSocketHandler):
 
     .. attribute:: room
 
-       A reference to the `web500.room.Room` which this websocket connection is
-       associated to.
+       The ID of the room that this connection is associated to.
 
     .. attribute:: user
 
@@ -51,6 +49,7 @@ class GameSocketHandler(WebSocketHandler):
         self.connected_sessions = {}
         self.room = None
         self.user = None
+        self.listener = None
         super().__init__(*args, **kwargs)
 
     @tornado.web.asynchronous
@@ -66,7 +65,10 @@ class GameSocketHandler(WebSocketHandler):
     def open(self):
         store.dispatch(AppAction.join_room, {'room': self.room,
                                              'user': self.user})
+
         def _react_messages(unconditional=False):
+            """Send messages when the internal state changes.
+            """
             access_messages = lambda s: s['rooms'][self.room]['messages']
             if store.changed(access_messages) or unconditional:
                 self.write_message({'messages': access_messages(store.state)})

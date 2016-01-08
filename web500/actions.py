@@ -16,20 +16,19 @@ from copy import deepcopy
 from enum import Enum
 from web500.store import handle
 
-_make_enum_dict = lambda xs: {x: x.upper() for x in xs}
-_actions = ['init',
-            'new_user',
-            'new_room',
-            'join_room',
-            'leave_room',
-            'message_room']
-
-AppAction = Enum('AppAction',
-                 _make_enum_dict(_actions))
+class AppAction(Enum):
+    """Enumeration of all possible actions in web500.
+    """
+    init = 'init'
+    new_user = 'new_user'
+    new_room = 'new_room'
+    join_room = 'join_room'
+    leave_room = 'leave_room'
+    message_room = 'message_room'
 
 
 @handle(AppAction.init)
-def init(_, old_store):
+def init(*_):
     """Initialise the database on an init event.
     """
     store = {'userids': set(),
@@ -59,6 +58,8 @@ def new_room(data, old_store):
 
 @handle(AppAction.join_room)
 def join_room(data, old_store):
+    """Adds a user to a room, associating it with a room-specific nickname.
+    """
     store = deepcopy(old_store)
     store['rooms'][data['room']]['users'][data['user']] = 'some_nickname'
     return store
@@ -66,6 +67,8 @@ def join_room(data, old_store):
 
 @handle(AppAction.message_room)
 def message_room(data, old_store):
+    """Adds a message to the room message log.
+    """
     store = deepcopy(old_store)
     message = {'from': data['from'],
                'messsage': data['message']}
@@ -75,6 +78,8 @@ def message_room(data, old_store):
 
 @handle(AppAction.leave_room)
 def leave_room(data, old_store):
+    """Removes a user from a room.
+    """
     store = deepcopy(old_store)
     del store['rooms'][data['room']]['users'][data['user']]
     return store

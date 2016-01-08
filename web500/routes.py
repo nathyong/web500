@@ -1,9 +1,10 @@
 """Defines different Flask routes for the actual server for web500.
 """
 
-from flask import session, render_template, redirect, url_for, abort
 import random
 import string
+
+from flask import session, render_template, redirect, url_for, abort
 
 from web500.actions import AppAction
 from web500.app import app

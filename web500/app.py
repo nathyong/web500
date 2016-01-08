@@ -3,9 +3,9 @@
 
 from flask import Flask
 
-app = Flask(__name__)
-
 import web500.config
 import web500.routes
+
+app = Flask(__name__)
 
 app.config.from_object(web500.config)
