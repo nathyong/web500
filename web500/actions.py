@@ -1,15 +1,6 @@
 """Defines the datastore actions and handlers for web500.
 
-The data store pattern looks a bit like this currently:
-```
-{'userids': {},
- 'rooms': {id: {'users': {userid: nickname},
-                'gamedata': data,
-                'messages': [message]
-               }
-          }
-}
-```
+For the shape of the data, refer to `_initial_state` and `_initial_room_state`.
 """
 
 import functools
@@ -17,6 +8,14 @@ from copy import deepcopy
 from enum import Enum
 
 from web500.store import handle
+
+_initial_state = {'userids': set(),
+                  'rooms': {}           # room_id : room_state
+                 }
+_initial_room_state = {'users': {},     # user_id : nickname
+                       'gamedata': {},  # TBD
+                       'messages': []   # [{messages}]
+                      }
 
 class AppAction(Enum):
     """Enumeration of all possible actions in web500.
@@ -47,9 +46,7 @@ def pure_arguments(f):
 def init(*_):
     """Initialise the database on an init event.
     """
-    store = {'userids': set(),
-             'rooms': {}}
-    return store
+    return _initial_state
 
 
 @handle(AppAction.new_user)
@@ -66,9 +63,7 @@ def new_user(data, store):
 def new_room(data, store):
     """Add a new room to the store.
     """
-    store['rooms'][data['id']] = {'users': {},
-                                  'gamedata': {},
-                                  'messages': []}
+    store['rooms'][data['id']] = _initial_room_state
     return store
 
 
