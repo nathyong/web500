@@ -41,7 +41,7 @@ def new_room():
                          for _ in range(room_id_length))
         if new_id not in store.state['rooms']:
             break
-    store.dispatch(AppAction.new_room, {'id': new_id})
+    store.dispatch(AppAction.new_room, {'room_id': new_id})
     return redirect(url_for('room', room_id=new_id))
 
 
@@ -55,5 +55,5 @@ def ensure_unique_id():
             if new_id not in store.state['userids']:
                 break
 
-        store.dispatch(AppAction.new_user, {'id': new_id})
+        store.dispatch(AppAction.new_user, {'user_id': new_id})
         session['userid'] = new_id

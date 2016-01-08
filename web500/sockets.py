@@ -63,8 +63,8 @@ class GameSocketHandler(WebSocketHandler):
         super().get(*args, **kwargs)
 
     def open(self):
-        store.dispatch(AppAction.join_room, {'room': self.room,
-                                             'user': self.user})
+        store.dispatch(AppAction.join_room, {'room_id': self.room,
+                                             'user_id': self.user})
 
         def _react_messages(unconditional=False):
             """Send messages when the internal state changes.
@@ -81,11 +81,11 @@ class GameSocketHandler(WebSocketHandler):
         _react_messages(unconditional=True)
 
     def on_message(self, message):
-        store.dispatch(AppAction.message_room, {'room': self.room,
-                                                'from': self.user,
+        store.dispatch(AppAction.message_room, {'room_id': self.room,
+                                                'sender_id': self.user,
                                                 'message': message})
 
     def on_close(self):
         self.listener()
-        store.dispatch(AppAction.leave_room, {'room': self.room,
-                                              'user': self.user})
+        store.dispatch(AppAction.leave_room, {'room_id': self.room,
+                                              'user_id': self.user})

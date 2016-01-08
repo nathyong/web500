@@ -6,26 +6,36 @@ For the shape of the data, refer to `_initial_state` and `_initial_room_state`.
 import functools
 from copy import deepcopy
 from enum import Enum
+from schema import Schema
 
 from web500.store import handle
 
 _initial_state = {'userids': set(),
-                  'rooms': {}           # room_id : room_state
+                  'rooms': {}            # room_id : room_state
                  }
-_initial_room_state = {'users': {},     # user_id : nickname
-                       'gamedata': {},  # TBD
-                       'messages': []   # [{messages}]
+_initial_room_state = {'nicknames': {},  # user_id : nickname
+                       'gamedata': {},   # TBD
+                       'messages': [],   # [{messages}]
+                       'online_users': set()
                       }
 
 class AppAction(Enum):
     """Enumeration of all possible actions in web500.
     """
-    init = 'init'
-    new_user = 'new_user'
-    new_room = 'new_room'
-    join_room = 'join_room'
-    leave_room = 'leave_room'
-    message_room = 'message_room'
+    init = Schema({})
+    new_user = Schema({'user_id': str})
+    new_room = Schema({'room_id': str})
+    join_room = Schema({'room_id': str, 'user_id': str})
+    leave_room = Schema({'room_id': str, 'user_id': str})
+    set_room_nickname = Schema({'room_id': str,
+                                'user_id': str,
+                                'nickname': str})
+    message_room = Schema({'room_id': str,
+                           'sender_id': str,
+                           'message': str})
+
+    def __init__(self, schema):
+        self.schema = schema
 
 
 def pure_arguments(f):
@@ -54,7 +64,7 @@ def init(*_):
 def new_user(data, store):
     """Add a new user to the store.
     """
-    store['userids'].add(data['id'])
+    store['userids'].add(data['user_id'])
     return store
 
 
@@ -63,7 +73,7 @@ def new_user(data, store):
 def new_room(data, store):
     """Add a new room to the store.
     """
-    store['rooms'][data['id']] = _initial_room_state
+    store['rooms'][data['room_id']] = _initial_room_state
     return store
 
 
@@ -72,7 +82,7 @@ def new_room(data, store):
 def join_room(data, store):
     """Adds a user to a room, associating it with a room-specific nickname.
     """
-    store['rooms'][data['room']]['users'][data['user']] = 'some_nickname'
+    store['rooms'][data['room_id']]['online_users'].add(data['user_id'])
     return store
 
 
@@ -81,9 +91,9 @@ def join_room(data, store):
 def message_room(data, store):
     """Adds a message to the room message log.
     """
-    message = {'from': data['from'],
+    message = {'from': data['sender_id'],
                'messsage': data['message']}
-    store['rooms'][data['room']]['messages'].append(message)
+    store['rooms'][data['room_id']]['messages'].append(message)
     return store
 
 
@@ -92,5 +102,5 @@ def message_room(data, store):
 def leave_room(data, store):
     """Removes a user from a room.
     """
-    del store['rooms'][data['room']]['users'][data['user']]
+    store['rooms'][data['room_id']]['online_users'].remove(data['user_id'])
     return store

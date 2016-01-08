@@ -26,7 +26,7 @@ def dispatch(action, data):
     global _last_state
     _log_debug('Dispatch: {}: {}'.format(action, data))
     _last_state = state
-    state = _handlers[action](data, state)
+    state = _handlers[action](action.schema.validate(data), state)
     print(diff(_last_state, state))
 
     for fn in _listeners:
