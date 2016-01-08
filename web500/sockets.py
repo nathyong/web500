@@ -7,7 +7,8 @@ from tornado.websocket import WebSocketHandler
 from itsdangerous import URLSafeTimedSerializer
 
 from web500.app import app
-from web500.room import get_room
+from web500.actions import AppAction
+import web500.store as store
 
 
 flaskSessionInterface = flask.sessions.SecureCookieSessionInterface()
@@ -55,20 +56,32 @@ class GameSocketHandler(WebSocketHandler):
     @tornado.web.asynchronous
     def get(self, room_id, *args, **kwargs):
         session = self.get_flask_session()
-        if "username" not in session:
+        if 'userid' not in session:
             app.logger.warning("unauthorised user tried to connect via socket")
             return
-        self.room = get_room(room_id)
-        self.user = session["username"]
+        self.room = room_id
+        self.user = session['userid']
         super().get(*args, **kwargs)
 
     def open(self):
-        self.room.add_connection(self, self.user)
-        app.logger.info("socket connection opened at {}".format(self.room.room_id))
+        def _react_messages():
+            access_messages = lambda s: s['rooms'][self.room]['messages']
+            if store.changed(access_messages):
+                self.write_message({'messages': access_messages(store.state)})
+
+            access_users = lambda s: s['rooms'][self.room]['users']
+            if store.changed(access_users):
+                self.write_message({'users': access_users(store.state)})
+
+        self.listener = store.subscribe(_react_messages)
+        app.logger.info("socket connection opened at {}".format(self.room))
 
     def on_message(self, message):
-        self.room.handle_message(message, self.user)
+        store.dispatch(AppAction.message_room, {'room': self.room,
+                                                'from': self.user,
+                                                'message': message})
 
     def on_close(self):
-        self.room.remove_connection(self)
-        app.logger.info("socket connection closed at {}".format(self.room.room_id))
+        # self.room.remove_connection(self)
+        self.listener()
+        app.logger.info("socket connection closed at {}".format(self.room))
