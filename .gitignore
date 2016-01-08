@@ -1,3 +1,6 @@
+# automatically compiled css
+web500/static/css/gen
+
 *.db
 *.db-journal
 
