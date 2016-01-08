@@ -71,3 +71,10 @@ def message_room(data, old_store):
                'messsage': data['message']}
     store['rooms'][data['room']]['messages'].append(message)
     return store
+
+
+@handle(AppAction.leave_room)
+def leave_room(data, old_store):
+    store = deepcopy(old_store)
+    del store['rooms'][data['room']]['users'][data['user']]
+    return store

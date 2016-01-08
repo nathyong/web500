@@ -40,8 +40,6 @@ def new_room():
         if new_id not in store.state['rooms']:
             break
     store.dispatch(AppAction.new_room, {'id': new_id})
-    store.dispatch(AppAction.join_room, {'room': new_id,
-                                         'user': session['userid']})
     return redirect(url_for('room', room_id=new_id))
 
 

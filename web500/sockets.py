@@ -64,6 +64,8 @@ class GameSocketHandler(WebSocketHandler):
         super().get(*args, **kwargs)
 
     def open(self):
+        store.dispatch(AppAction.join_room, {'room': self.room,
+                                             'user': self.user})
         def _react_messages(unconditional=False):
             access_messages = lambda s: s['rooms'][self.room]['messages']
             if store.changed(access_messages) or unconditional:
@@ -83,6 +85,7 @@ class GameSocketHandler(WebSocketHandler):
                                                 'message': message})
 
     def on_close(self):
-        # self.room.remove_connection(self)
         self.listener()
+        store.dispatch(AppAction.leave_room, {'room': self.room,
+                                              'user': self.user})
         app.logger.info("socket connection closed at {}".format(self.room))
