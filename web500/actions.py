@@ -12,8 +12,10 @@ The data store pattern looks a bit like this currently:
 ```
 """
 
+import functools
 from copy import deepcopy
 from enum import Enum
+
 from web500.store import handle
 
 class AppAction(Enum):
@@ -27,7 +29,20 @@ class AppAction(Enum):
     message_room = 'message_room'
 
 
+def pure_arguments(f):
+    """Convenient decorator to deepcopy all arguments of a function before it is
+    called.
+    """
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        pure_args = (deepcopy(arg) for arg in args)
+        pure_kwargs = {k: deepcopy(v) for k, v in kwargs.items()}
+        return f(*pure_args, **pure_kwargs)
+    return wrapper
+
+
 @handle(AppAction.init)
+@pure_arguments
 def init(*_):
     """Initialise the database on an init event.
     """
@@ -37,19 +52,19 @@ def init(*_):
 
 
 @handle(AppAction.new_user)
-def new_user(data, old_store):
+@pure_arguments
+def new_user(data, store):
     """Add a new user to the store.
     """
-    store = deepcopy(old_store)
     store['userids'].add(data['id'])
     return store
 
 
 @handle(AppAction.new_room)
-def new_room(data, old_store):
+@pure_arguments
+def new_room(data, store):
     """Add a new room to the store.
     """
-    store = deepcopy(old_store)
     store['rooms'][data['id']] = {'users': {},
                                   'gamedata': {},
                                   'messages': []}
@@ -57,19 +72,19 @@ def new_room(data, old_store):
 
 
 @handle(AppAction.join_room)
-def join_room(data, old_store):
+@pure_arguments
+def join_room(data, store):
     """Adds a user to a room, associating it with a room-specific nickname.
     """
-    store = deepcopy(old_store)
     store['rooms'][data['room']]['users'][data['user']] = 'some_nickname'
     return store
 
 
 @handle(AppAction.message_room)
-def message_room(data, old_store):
+@pure_arguments
+def message_room(data, store):
     """Adds a message to the room message log.
     """
-    store = deepcopy(old_store)
     message = {'from': data['from'],
                'messsage': data['message']}
     store['rooms'][data['room']]['messages'].append(message)
@@ -77,9 +92,9 @@ def message_room(data, old_store):
 
 
 @handle(AppAction.leave_room)
-def leave_room(data, old_store):
+@pure_arguments
+def leave_room(data, store):
     """Removes a user from a room.
     """
-    store = deepcopy(old_store)
     del store['rooms'][data['room']]['users'][data['user']]
     return store
