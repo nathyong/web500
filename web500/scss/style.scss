@@ -1,0 +1,51 @@
+$msglist-height: 400px;
+$chatline-color: #f2f2f2;
+
+#error, #login {
+    display: none;
+}
+
+#chatbox {
+    width: 100%;
+}
+
+#msglist {
+    height: $msglist-height;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    display: block;
+    padding: 0;
+    word-wrap: break-word;
+}
+
+#msgform {
+    input {
+        width: 100%;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+
+    span {
+        display: block;
+        overflow: hidden;
+    }
+
+    button {
+        float: right;
+    }
+}
+
+.chatline span {
+    font-weight: bold;
+}
+
+.chatline:nth-child(even) {
+    background-color: $chatline-color;
+}
+
+.chatline-announce {
+    font-weight: bold;
+    font-style: italic;
+}
