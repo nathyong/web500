@@ -1,0 +1,2 @@
+recursive-include web500/templates *
+recursive-include web500/static *
