@@ -27,6 +27,7 @@ def room(room_id):
     """
     if room_id not in store.state['rooms']:
         abort(404)
+    ensure_unique_id()
     return render_template("room.html", room_id=room_id)
 
 
