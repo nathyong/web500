@@ -64,16 +64,17 @@ class GameSocketHandler(WebSocketHandler):
         super().get(*args, **kwargs)
 
     def open(self):
-        def _react_messages():
+        def _react_messages(unconditional=False):
             access_messages = lambda s: s['rooms'][self.room]['messages']
-            if store.changed(access_messages):
+            if store.changed(access_messages) or unconditional:
                 self.write_message({'messages': access_messages(store.state)})
 
             access_users = lambda s: s['rooms'][self.room]['users']
-            if store.changed(access_users):
+            if store.changed(access_users) or unconditional:
                 self.write_message({'users': access_users(store.state)})
 
         self.listener = store.subscribe(_react_messages)
+        _react_messages(unconditional=True)
         app.logger.info("socket connection opened at {}".format(self.room))
 
     def on_message(self, message):
