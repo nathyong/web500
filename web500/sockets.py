@@ -2,6 +2,7 @@
 """
 
 import flask.sessions
+import json
 import tornado.web
 from tornado.websocket import WebSocketHandler
 
@@ -88,9 +89,16 @@ class GameSocketHandler(WebSocketHandler):
         _react_messages(unconditional=True)
 
     def on_message(self, message):
-        store.dispatch(AppAction.message_room, {'room_id': self.room,
-                                                'sender_id': self.user,
-                                                'message': message})
+        message = json.loads(message)
+        assert message['act']
+        assert message['data']
+        if message['act'] == 'chat':
+            store.dispatch(AppAction.message_room, {
+                'room_id': self.room,
+                'sender_id': self.user,
+                'message': message['data']})
+        else:
+            app.logger.error('Unexpected message: {}'.format(message))
 
     def on_close(self):
         self.listener()
