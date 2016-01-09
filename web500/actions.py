@@ -92,7 +92,7 @@ def message_room(data, store):
     """Adds a message to the room message log.
     """
     sender = store['rooms'][data['room_id']]['nicknames'][data['sender_id']]
-    message = {'from': data['sender_id'],
+    message = {'from': sender,
                'messsage': data['message']}
     store['rooms'][data['room_id']]['messages'].append(message)
     return store

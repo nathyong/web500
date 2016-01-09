@@ -71,14 +71,17 @@ class GameSocketHandler(WebSocketHandler):
             """
             access_messages = lambda s: s['rooms'][self.room]['messages']
             if store.changed(access_messages) or unconditional:
-                self.write_message({'messages': access_messages(store.state)})
+                self.write_message({
+                    'act': 'messages',
+                    'messages': access_messages(store.state)
+                })
 
             access_users = lambda s: s['rooms'][self.room]['online_users']
             if store.changed(access_users) or unconditional:
                 nicknames = store.state['rooms'][self.room]['nicknames']
                 online_nicks = [nicknames[userid]
                                 for userid in access_users(store.state)]
-                response = {'users': online_nicks}
+                response = {'act': 'users', 'users': online_nicks}
                 self.write_message(response)
 
         self.listener = store.subscribe(_react_messages)
