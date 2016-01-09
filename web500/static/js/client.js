@@ -25,7 +25,7 @@ ws.onmessage = function(evt) {
 function sendmsg(msg) {
     data = {
         act : 'chat',
-        message : msg,
+        data : msg,
     };
     ws.send(JSON.stringify(data));
 }
