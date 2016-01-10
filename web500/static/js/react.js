@@ -2,7 +2,16 @@ var socket = new SocketService("ws://" + location.host + location.pathname + '/w
 
 var Message = React.createClass({
     render: function() {
-        return (<li className="chatline"><div className="prefix">{this.props.message.from}: </div>{this.props.message.text}</li>);
+        var classes = 'chatline';
+        if (this.props.type === 'notice') {
+            classes += ' chatline-announce';
+        }
+        return (<li className={classes}>
+            <span className="prefix">
+                <span>{this.props.message.from}: </span>
+            </span>
+            {this.props.message.text}
+        </li>);
     }
 });
 
@@ -10,9 +19,9 @@ var MessageList = React.createClass({
     getInitialState: function() {
         return {messages: []};
     },
-    addMessage: function(message) {
+    addMessage: function(type, message) {
         var current = this.state.messages;
-        current.push(<Message message={message} />);
+        current.push(<Message type={type} message={message} />);
         this.setState({messages: current});
         $('#msglist').scrollTop($("#msglist")[0].scrollHeight);
     },
@@ -20,11 +29,11 @@ var MessageList = React.createClass({
         var messageList = this;
         socket.addListener('chat', function(message) {
             for (var m of message.data) {
-                messageList.addMessage(m);
+                messageList.addMessage('chat', m);
             }
         });
         socket.addListener('notice', function(message) {
-            messageList.addMessage(message.data);
+            messageList.addMessage('notice', message.data);
         });
     },
     render: function() {
