@@ -68,11 +68,11 @@ class GameSocketHandler(WebSocketHandler):
         store.dispatch(AppAction.join_room, {'room_id': self.room,
                                              'user_id': self.user})
 
-        def _react_messages(unconditional=False):
+        def _react_messages(initial=False):
             """Send messages when the internal state changes.
             """
             access_messages = lambda s: s['rooms'][self.room]['messages']
-            if store.changed(access_messages) or unconditional:
+            if store.changed(access_messages):
                 messages = [{'from': m['from'],
                              'text': m['text'],
                              'time': str(m['time'])}
@@ -83,21 +83,23 @@ class GameSocketHandler(WebSocketHandler):
                 })
 
             access_users = lambda s: s['rooms'][self.room]['online_users']
-            if store.changed(access_users) or unconditional:
+            if store.changed(access_users) or initial:
                 nicknames = store.state['rooms'][self.room]['nicknames']
                 online_nicks = [nicknames[userid]
                                 for userid in access_users(store.state)]
                 response = {'act': 'users', 'users': online_nicks}
                 self.write_message(response)
 
-        self.write_message({
-            'act': 'notice',
-            'data': {'from': 'chatbot',
-                     'text': 'Connected to chat server! Plain Ice!',
-                     'time': str(datetime.now())}})
+            if initial:
+                self.write_message({
+                    'act': 'notice',
+                    'data': {'from': 'chatbot',
+                             'text': 'Connected to chat server! Play nice!',
+                             'time': str(datetime.now())}
+                })
 
         self.listener = store.subscribe(_react_messages)
-        _react_messages(unconditional=True)
+        _react_messages(initial=True)
 
     def on_message(self, message):
         message = json.loads(message)
