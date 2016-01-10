@@ -1,13 +1,23 @@
 var socket = new SocketService("ws://" + location.host + location.pathname + '/ws');
 
+function formattedDate(date) {
+    var hours = date.getHours();
+    hours = (hours < 10) ? '0' + hours : String(hours);
+    var mins = date.getMinutes();
+    mins = (mins < 10) ? '0' + mins : String(mins);
+    return hours + ':' + mins;
+}
+
 var Message = React.createClass({
     render: function() {
         var classes = 'chatline';
         if (this.props.type === 'notice') {
             classes += ' chatline-announce';
         }
+        var timestamp = formattedDate(new Date(this.props.message.time));
         return (<li className={classes}>
             <span className="prefix">
+                <span className="timestamp">{timestamp} </span>
                 <span>{this.props.message.from}: </span>
             </span>
             {this.props.message.text}

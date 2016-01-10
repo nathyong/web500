@@ -37,8 +37,18 @@ $chatline-color: #f2f2f2;
     }
 }
 
-.chatline:nth-child(even) {
-    background-color: $chatline-color;
+.chatline{
+    &:nth-child(even) {
+        background-color: $chatline-color;
+    }
+
+    .prefix {
+        font-weight: bold;
+    }
+    
+    .timestamp {
+        font-family: monospace;
+    }
 }
 
 .chatline-announce {
@@ -46,7 +56,3 @@ $chatline-color: #f2f2f2;
     font-style: italic;
 }
 
-.chatline .prefix {
-    display: inline;
-    font-weight: bold;
-}
