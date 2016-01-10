@@ -75,7 +75,7 @@ class GameSocketHandler(WebSocketHandler):
             if store.changed(access_messages) or unconditional:
                 messages = [{'from': m['from'],
                              'text': m['text'],
-                             'time': str(m['time'])}
+                             'time': m['time'].isoformat()}
                             for m in access_messages(store.state)]
                 self.write_message({
                     'act': 'chat',
@@ -94,7 +94,7 @@ class GameSocketHandler(WebSocketHandler):
             'act': 'notice',
             'data': {'from': 'chatbot',
                      'text': 'Connected to the chat server! Play nice!',
-                     'time': str(datetime.now())}})
+                     'time': datetime.now().isoformat()}})
 
         self.listener = store.subscribe(_react_messages)
         _react_messages(unconditional=True)
