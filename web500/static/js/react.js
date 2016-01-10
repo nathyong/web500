@@ -33,8 +33,11 @@ var ChatBox = React.createClass({
         var text = input.value.trim();
         if (text === '') return;
 
+        //text starting with ! will be a game command like !bid, !play etc
+        var action = (text[0] === '!') ? 'command': 'chat';
+
         socket.sendRequest({
-            act: 'chat',
+            act: action,
             data: text,
         });
 
