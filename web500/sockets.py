@@ -90,6 +90,12 @@ class GameSocketHandler(WebSocketHandler):
                 response = {'act': 'users', 'users': online_nicks}
                 self.write_message(response)
 
+        self.write_message({
+            'act': 'notice',
+            'data': {'from': 'chatbot',
+                     'text': 'Connected to chat server! Plain Ice!',
+                     'time': str(datetime.now())}})
+
         self.listener = store.subscribe(_react_messages)
         _react_messages(unconditional=True)
 
