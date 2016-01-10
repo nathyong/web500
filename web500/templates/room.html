@@ -11,23 +11,15 @@
       </div>
   </div>
   <div class="col-sm-4">
-      <div id="chatbox">
-          <ul id="msglist"></ul>
-          <form id="msgform">
-              <button>Send</button>
-              <span>
-                  <input type="text" autocomplete="off" placeholder="Say something nice" name="msgbox" id="msgbox" />
-              </span>
-          </form>
-      </div>
-      <div id="onlineusers">
-          <h3>Online Users</h3>
-          <ul>
-          </ul>
-      </div>
+      <div id="chatbox"></div>
+      <div id="onlineusers"></div>
   </div>
 {% endblock %}
 
 {% block scripts %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/client.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/react.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/react-dom.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/browser-5.8.23.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/socketService.js') }}"></script>
+<script type="text/babel" src="{{ url_for('static', filename='js/react.js') }}"></script>
 {% endblock %}

@@ -37,10 +37,6 @@ $chatline-color: #f2f2f2;
     }
 }
 
-.chatline span {
-    font-weight: bold;
-}
-
 .chatline:nth-child(even) {
     background-color: $chatline-color;
 }
@@ -48,4 +44,9 @@ $chatline-color: #f2f2f2;
 .chatline-announce {
     font-weight: bold;
     font-style: italic;
+}
+
+.chatline .prefix {
+    display: inline;
+    font-weight: bold;
 }
