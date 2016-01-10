@@ -4,6 +4,7 @@
 import flask.sessions
 import json
 import tornado.web
+from datetime import datetime
 from tornado.websocket import WebSocketHandler
 
 from web500.app import app
@@ -72,9 +73,13 @@ class GameSocketHandler(WebSocketHandler):
             """
             access_messages = lambda s: s['rooms'][self.room]['messages']
             if store.changed(access_messages) or unconditional:
+                messages = [{'from': m['from'],
+                             'text': m['text'],
+                             'time': str(m['time'])}
+                            for m in access_messages(store.state)]
                 self.write_message({
-                    'act': 'messages',
-                    'messages': access_messages(store.state)
+                    'act': 'chat',
+                    'data': messages
                 })
 
             access_users = lambda s: s['rooms'][self.room]['online_users']
@@ -84,6 +89,12 @@ class GameSocketHandler(WebSocketHandler):
                                 for userid in access_users(store.state)]
                 response = {'act': 'users', 'users': online_nicks}
                 self.write_message(response)
+
+        self.write_message({
+            'act': 'notice',
+            'data': {'from': 'chatbot',
+                     'text': 'Connected to chat server! Plain Ice!',
+                     'time': str(datetime.now())}})
 
         self.listener = store.subscribe(_react_messages)
         _react_messages(unconditional=True)
@@ -96,7 +107,8 @@ class GameSocketHandler(WebSocketHandler):
             store.dispatch(AppAction.message_room, {
                 'room_id': self.room,
                 'sender_id': self.user,
-                'message': message['data']})
+                'text': message['data'],
+                'time': datetime.now()})
         else:
             app.logger.error('Unexpected message: {}'.format(message))
 

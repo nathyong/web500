@@ -5,6 +5,7 @@ For the shape of the data, refer to `_initial_state` and `_initial_room_state`.
 
 import functools
 from copy import deepcopy
+from datetime import datetime
 from enum import Enum
 from schema import Schema
 
@@ -32,7 +33,8 @@ class AppAction(Enum):
                                 'nickname': str})
     message_room = Schema({'room_id': str,
                            'sender_id': str,
-                           'message': str})
+                           'text': str,
+                           'time': datetime})
 
     def __init__(self, schema):
         self.schema = schema
@@ -93,8 +95,9 @@ def message_room(data, store):
     """
     sender = store['rooms'][data['room_id']]['nicknames'][data['sender_id']]
     message = {'from': sender,
-               'messsage': data['message']}
-    store['rooms'][data['room_id']]['messages'].append(message)
+               'text': data['text'],
+               'time': data['time']}
+    store['rooms'][data['room_id']]['messages'] = [message]
     return store
 
 
