@@ -93,7 +93,7 @@ class GameSocketHandler(WebSocketHandler):
         self.write_message({
             'act': 'notice',
             'data': {'from': 'chatbot',
-                     'text': 'Connected to chat server! Plain Ice!',
+                     'text': 'Connected to the chat server! Play nice!',
                      'time': str(datetime.now())}})
 
         self.listener = store.subscribe(_react_messages)
