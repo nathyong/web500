@@ -2,7 +2,7 @@ var socket = new SocketService("ws://" + location.host + location.pathname + '/w
 
 var Message = React.createClass({
     render: function() {
-        return (<li className="chatline"><div className="prefix">{this.props.from}: </div>{this.props.message}</li>);
+        return (<li className="chatline"><div className="prefix">{this.props.message.from}: </div>{this.props.message.text}</li>);
     }
 });
 
@@ -10,18 +10,25 @@ var MessageList = React.createClass({
     getInitialState: function() {
         return {messages: []};
     },
+    addMessage: function(message) {
+        var current = this.state.messages;
+        current.push(<Message message={message} />);
+        this.setState({messages: current});
+        $('#msglist').scrollTop($("#msglist")[0].scrollHeight);
+    },
     componentWillMount: function() {
         var messageList = this;
-        socket.addListener('messages', function(message) {
-            messageList.setState({messages: message.messages});
-            $('#msglist').scrollTop($("#msglist")[0].scrollHeight);
+        socket.addListener('chat', function(message) {
+            for (var m of message.data) {
+                messageList.addMessage(m);
+            }
+        });
+        socket.addListener('notice', function(message) {
+            messageList.addMessage(message.data);
         });
     },
     render: function() {
-        var allMessages = this.state.messages.map(function(message) {
-            return (<Message from={message.from} message={message.messsage} />);
-        });
-        return (<ul id="msglist">{allMessages}</ul>);
+        return (<ul id="msglist">{this.state.messages}</ul>);
     }
 });
 
