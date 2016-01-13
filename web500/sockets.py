@@ -4,6 +4,7 @@
 import flask.sessions
 import json
 import tornado.web
+from datetime import datetime
 from tornado.websocket import WebSocketHandler
 
 from web500.app import app
@@ -67,26 +68,38 @@ class GameSocketHandler(WebSocketHandler):
         store.dispatch(AppAction.join_room, {'room_id': self.room,
                                              'user_id': self.user})
 
-        def _react_messages(unconditional=False):
+        def _react_messages(initial=False):
             """Send messages when the internal state changes.
             """
             access_messages = lambda s: s['rooms'][self.room]['messages']
-            if store.changed(access_messages) or unconditional:
+            if store.changed(access_messages):
+                messages = [{'from': m['from'],
+                             'text': m['text'],
+                             'time': m['time'].isoformat()}
+                            for m in access_messages(store.state)]
                 self.write_message({
-                    'act': 'messages',
-                    'messages': access_messages(store.state)
+                    'act': 'chat',
+                    'data': messages
                 })
 
             access_users = lambda s: s['rooms'][self.room]['online_users']
-            if store.changed(access_users) or unconditional:
+            if store.changed(access_users) or initial:
                 nicknames = store.state['rooms'][self.room]['nicknames']
                 online_nicks = [nicknames[userid]
                                 for userid in access_users(store.state)]
                 response = {'act': 'users', 'users': online_nicks}
                 self.write_message(response)
 
+            if initial:
+                self.write_message({
+                    'act': 'notice',
+                    'data': {'from': 'chatbot',
+                             'text': 'Connected to chat server! Play nice!',
+                             'time': datetime.now().isoformat()}
+                })
+
         self.listener = store.subscribe(_react_messages)
-        _react_messages(unconditional=True)
+        _react_messages(initial=True)
 
     def on_message(self, message):
         message = json.loads(message)
@@ -96,7 +109,8 @@ class GameSocketHandler(WebSocketHandler):
             store.dispatch(AppAction.message_room, {
                 'room_id': self.room,
                 'sender_id': self.user,
-                'message': message['data']})
+                'text': message['data'],
+                'time': datetime.now()})
         else:
             app.logger.error('Unexpected message: {}'.format(message))
 
