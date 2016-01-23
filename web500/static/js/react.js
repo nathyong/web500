@@ -113,18 +113,4 @@ var OnlineUsersList = React.createClass({
 ReactDOM.render(<ChatBox />, document.getElementById('chatbox'));
 ReactDOM.render(<OnlineUsersList />, document.getElementById('onlineusers'));
 
-
-var $container = document.getElementById('container');
-var deck = Deck();
-deck.cards.forEach(function (card, i) {
-  card.enableDragging();
-  card.enableFlipping();
-});
-deck.mount($container);
-deck.intro();
-deck.shuffle();
-deck.shuffle();
-deck.deal();
-deck.showHand(true);
-deck.showHand();
-
+new Game(socket);
