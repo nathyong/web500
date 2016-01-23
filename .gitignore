@@ -1,5 +1,5 @@
 # automatically compiled css
-web500/static/css
+web500/static/css/*.scss.css
 
 *.db
 *.db-journal
